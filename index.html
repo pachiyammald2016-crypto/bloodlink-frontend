@@ -775,7 +775,7 @@
             const statusIndicator = document.getElementById('systemStatus');
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 1800);
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
                 
                 const response = await fetch(`${API_BASE_URL}/donors`, { 
                     signal: controller.signal 
