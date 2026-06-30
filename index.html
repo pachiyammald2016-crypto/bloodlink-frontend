@@ -988,7 +988,11 @@
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const tabId = btn.getAttribute('data-tab');
-                    switchTab(tabId);
+                    if (tabId === 'register') {
+                        handleRegisterDonorClick();
+                    } else {
+                        switchTab(tabId);
+                    }
                 });
             });
         }
