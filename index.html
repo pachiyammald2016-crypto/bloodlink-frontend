@@ -993,6 +993,7 @@
             setupToggleListeners();
             initializeMockData();
             checkApiConnection();
+            updateAuthUI();
             
             // Check Admin Status on Load
             if (sessionStorage.getItem('admin_verified') === 'true') {
@@ -1297,6 +1298,7 @@
                     
                     switchTab('register');
                     checkExistingDonorAndSetupForm(pendingLoginEmail);
+                    updateAuthUI();
                 } else {
                     const data = await response.json();
                     showAlert(data.message || 'Invalid OTP. Please try again.', 'error');
@@ -1945,22 +1947,29 @@
             document.getElementById('donorForm').reset();
             document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
             document.getElementById('donorAreaList').innerHTML = '';
-            document.getElementById('locationStatus').textContent = 'Not shared (uses district center)';
-            document.getElementById('locationStatus').style.color = 'var(--text-muted)';
+            // Re-fetch existing donor data to keep form populated correctly as 'Update Profile'
+            if (sessionStorage.getItem('donor_verified_email')) {
+                checkExistingDonorAndSetupForm(sessionStorage.getItem('donor_verified_email'));
+            }
             
-            sessionStorage.removeItem('donor_id');
-            sessionStorage.removeItem('donor_verified_email');
+            // Switch to Home or stay on Register instead of Donors List
+            setTimeout(() => {
+                if (sessionStorage.getItem('donor_verified_email')) {
+                    switchTab('register');
+                } else {
+                    switchTab('home');
+                }
+            }, 1500);
+            
             const emailInput = document.getElementById('donorEmail');
-            if (emailInput) {
+            if (emailInput && !sessionStorage.getItem('donor_verified_email')) {
                 emailInput.readOnly = false;
             }
+            document.getElementById('locationStatus').textContent = 'Not shared (uses district center)';
+            document.getElementById('locationStatus').style.color = 'var(--text-muted)';
             pendingDonorData = null;
-            
-            // Switch to Home instead of Donors List to protect donor directories
-            setTimeout(() => {
-                switchTab('home');
-            }, 1200);
         }
+
 
         // Submit Request Creation
         async function handleRequestSubmit(event) {
@@ -2545,6 +2554,79 @@
         }
 
 
+    </script>
+    <script>
+        function updateAuthUI() {
+            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
+            if (verifiedEmail) {
+                const headerActions = document.querySelector('.header-actions');
+                if (headerActions) {
+                    headerActions.innerHTML = `
+                        <div class="user-profile-menu" style="display: flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.05); padding: 0.4rem 1rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);">
+                            <i class="fa-solid fa-circle-user" style="font-size: 1.5rem; color: var(--accent-red);"></i>
+                            <div class="user-details" style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.85rem; font-weight: 600; color: white;">${verifiedEmail.split('@')[0]}</span>
+                                <span style="font-size: 0.7rem; color: var(--accent-red); cursor: pointer; font-weight: 500;" onclick="logoutDonor()">Logout</span>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                // Hide password field in registration form
+                const pwdInput = document.getElementById('donorPassword');
+                if (pwdInput) {
+                    const pwdGroup = pwdInput.closest('.form-group');
+                    if (pwdGroup) pwdGroup.style.display = 'none';
+                    // We also set the password to a placeholder so validation doesn't fail
+                    pwdInput.value = 'AuthPlaceholder123';
+                }
+            } else {
+                const headerActions = document.querySelector('.header-actions');
+                if (headerActions) {
+                    headerActions.innerHTML = `
+                        <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()">
+                            <i class="fa-solid fa-user-plus"></i> Sign Up
+                        </button>
+                        <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
+                            <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                        </button>
+                    `;
+                }
+                
+                // Show password field in registration form
+                const pwdInput = document.getElementById('donorPassword');
+                if (pwdInput) {
+                    const pwdGroup = pwdInput.closest('.form-group');
+                    if (pwdGroup) pwdGroup.style.display = 'block';
+                    pwdInput.value = '';
+                }
+            }
+        }
+
+        function logoutDonor() {
+            sessionStorage.removeItem('donor_id');
+            sessionStorage.removeItem('donor_verified_email');
+            const emailInput = document.getElementById('donorEmail');
+            if (emailInput) {
+                emailInput.value = '';
+                emailInput.readOnly = false;
+                emailInput.style.backgroundColor = 'rgba(0,0,0,0.3)';
+            }
+            const pwdInput = document.getElementById('donorPassword');
+            if (pwdInput) pwdInput.value = '';
+            
+            document.getElementById('donorForm').reset();
+            const formTitle = document.querySelector('#registerTab .form-header h2');
+            const formDesc = document.querySelector('#registerTab .form-header p');
+            const submitBtn = document.querySelector('#registerTab button[type="submit"]');
+            if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor';
+            if (formDesc) formDesc.textContent = 'Be someone\\'s hero. Register your details to join the active pool of donors in Tamil Nadu.';
+            if (submitBtn) submitBtn.textContent = 'Submit Registration';
+            
+            updateAuthUI();
+            switchTab('home');
+            showAlert('Logged out successfully.', 'info');
+        }
     </script>
 </body>
 </html>
