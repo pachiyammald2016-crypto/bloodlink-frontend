@@ -1192,23 +1192,23 @@ input:checked + .slider:before {
 .alert-banner {
     position: fixed;
     top: 2rem;
-    right: 2rem;
+    left: 50%;
+    transform: translate(-50%, -50px);
     padding: 1rem 1.5rem;
     border-radius: 12px;
     color: white;
     font-weight: 500;
-    z-index: 1000;
+    z-index: 1100;
     display: flex;
     align-items: center;
     gap: 1.5rem;
     box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    transform: translateY(-50px);
     opacity: 0;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .alert-banner.show {
-    transform: translateY(0);
+    transform: translate(-50%, 0);
     opacity: 1;
 }
 
