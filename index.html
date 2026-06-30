@@ -1136,6 +1136,7 @@
                     switchTab('register');
                     checkExistingDonorAndSetupForm(email);
                     showAlert('Logged in successfully!', 'success');
+                    updateAuthUI();
                 } else if (response.status === 404) {
                     showAlert('Account not found. Please sign up first.', 'warning');
                     closeDonorLoginModal();
@@ -1216,6 +1217,16 @@
                         if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-pen text-primary"></i> Update Your Donor Profile';
                         if (formDesc) formDesc.textContent = 'Manage your availability status, contact details, and location for matching.';
                         if (submitBtn) submitBtn.textContent = 'Update Profile';
+                        
+                        // Hide password field during update
+                        const pwdInput = document.getElementById('donorPassword');
+                        if (pwdInput) {
+                            const pwdGroup = pwdInput.closest('.form-group');
+                            if (pwdGroup) {
+                                pwdGroup.style.display = 'none';
+                            }
+                            pwdInput.value = 'AuthPlaceholder123';
+                        }
                     } else {
                         sessionStorage.removeItem('donor_id');
                         
