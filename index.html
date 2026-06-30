@@ -1878,45 +1878,13 @@
             });
         }
 
-        // Logic to prevent direct access to attender contact details for non-matching donors
+        // Logic to prevent direct access to attender contact details
         function handleContactAttender(event, phone, reqBloodGroup, isWhatsApp = false, waMsg = '') {
             event.preventDefault();
             
-            // Allow admins to bypass
-            if (sessionStorage.getItem('admin_verified') === 'true') {
-                proceedToContact(phone, isWhatsApp, waMsg);
-                return;
-            }
-            
-            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
-            if (!verifiedEmail) {
-                showAlert('Unable to access. Please Login or Register as a Donor first.', 'error');
-                return;
-            }
-            
-            let currentDonor = null;
-            if (typeof allLoadedDonors !== 'undefined' && allLoadedDonors.length > 0) {
-                currentDonor = allLoadedDonors.find(d => d.email === verifiedEmail);
-            }
-            if (!currentDonor) {
-                currentDonor = mockDonors.find(d => d.email === verifiedEmail);
-            }
-            
-            if (!currentDonor) {
-                showAlert('Unable to access. Donor profile not found.', 'error');
-                return;
-            }
-            
-            // Check compatibility using the reverse of COMPATIBILITY_MAP (Can currentDonor give to reqBloodGroup?)
-            // COMPATIBILITY_MAP[reqBloodGroup] returns a list of donors who CAN GIVE to the reqBloodGroup.
-            const compatibleGroups = COMPATIBILITY_MAP[reqBloodGroup] || [];
-            if (!compatibleGroups.includes(currentDonor.bloodGroup)) {
-                showAlert(`Unable to access. Your blood group (${currentDonor.bloodGroup}) does not match the patient's requirement (${reqBloodGroup}).`, 'error');
-                return;
-            }
-            
-            // If they are logged in and compatible, allow contact!
-            proceedToContact(phone, isWhatsApp, waMsg);
+            // User requested that no other users can access the blood request details
+            showAlert("Other users can't access it. Only the person who made the request can view these details.", 'error');
+            return;
         }
         
         function proceedToContact(phone, isWhatsApp, waMsg) {
