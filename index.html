@@ -55,12 +55,7 @@
             </div>
             
             <div class="header-actions">
-                <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()">
-                    <i class="fa-solid fa-user-plus"></i> Sign Up
-                </button>
-                <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
-                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
-                </button>
+
                 <div class="system-status" id="systemStatus">
                     <span class="status-indicator offline"></span>
                     <span class="system-status-badge status-text">Checking server...</span>
@@ -2643,29 +2638,13 @@
             } else {
                 const headerActions = document.querySelector('.header-actions');
                 if (headerActions) {
-                    if (localStorage.getItem('has_registered') === 'true') {
-                        headerActions.innerHTML = `
-                            <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
-                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="openDonorSignUpModal()">Sign Up</button>
-                        `;
-                    } else {
-                        headerActions.innerHTML = `
-                            <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()">
-                                <i class="fa-solid fa-user-plus"></i> Sign Up
-                            </button>
-                            <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
-                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
-                            </button>
-                        `;
-                    }
-                }
-                const pwdInput = document.getElementById('donorPassword');
-                if (pwdInput) {
-                    const pwdGroup = pwdInput.closest('.form-group');
-                    if (pwdGroup) pwdGroup.style.display = 'block';
-                    pwdInput.value = '';
+                    headerActions.innerHTML = `
+                        <div class="system-status" id="systemStatus">
+                            <span class="status-indicator offline"></span>
+                            <span class="system-status-badge status-text">Checking server...</span>
+                        </div>
+                    `;
+                    checkApiConnection();
                 }
             }
         }
