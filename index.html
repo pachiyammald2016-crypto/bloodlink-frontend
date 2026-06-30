@@ -120,10 +120,10 @@
                         <h1>Connecting Lives, <br><span class="highlight">One Drop</span> at a Time</h1>
                         <p class="hero-subtitle">Find blood donors near you in Tamil Nadu instantly. Register as a donor today to save lives, or raise a direct request for emergency cases.</p>
                         <div class="hero-actions">
-                            <button class="btn btn-primary btn-lg" onclick="handleRegisterDonorClick()">
+                            <button class="btn btn-primary btn-lg" onclick="requireAuthAndNavigate('register')">
                                 <i class="fa-solid fa-heart-pulse"></i> Register as Donor
                             </button>
-                            <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
+                            <button class="btn btn-secondary btn-lg" onclick="requireAuthAndNavigate('request')">
                                 <i class="fa-solid fa-truck-medical"></i> Request Blood
                             </button>
                         </div>
@@ -1000,8 +1000,8 @@
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const tabId = btn.getAttribute('data-tab');
-                    if (tabId === 'register') {
-                        handleRegisterDonorClick();
+                    if (tabId === 'register' || tabId === 'request') {
+                        requireAuthAndNavigate(tabId);
                     } else {
                         switchTab(tabId);
                     }
@@ -1071,15 +1071,18 @@
             }
         }
 
-        function handleRegisterDonorClick() {
+        function requireAuthAndNavigate(targetTab) {
             const isVerified = sessionStorage.getItem('donor_verified_email');
             if (isVerified) {
-                const hasRegistered = localStorage.getItem('has_registered');
-                if (hasRegistered === 'true') {
-                    showAlert('You are already registered! You can update your profile here.', 'info');
+                if (targetTab === 'register') {
+                    const hasRegistered = localStorage.getItem('has_registered');
+                    if (hasRegistered === 'true') {
+                        showAlert('You are already registered! You can update your profile here.', 'info');
+                    }
                 }
-                switchTab('register');
+                switchTab(targetTab);
             } else {
+                sessionStorage.setItem('post_auth_tab', targetTab);
                 openDonorSignUpModal();
             }
         }
@@ -1278,7 +1281,9 @@
                         emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
                     }
                     
-                    switchTab('register');
+                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
+                    sessionStorage.removeItem('post_auth_tab');
+                    switchTab(targetTab);
                     checkExistingDonorAndSetupForm(pendingLoginEmail);
                 } else {
                     showAlert('Invalid OTP. Please enter 123456 for Offline Mode.', 'error');
