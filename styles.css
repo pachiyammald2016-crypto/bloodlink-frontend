@@ -1223,11 +1223,23 @@ input:checked + .slider:before {
 }
 
 .alert-banner.success {
-    /* overridden by !important */
+    background: #10b981 !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35) !important;
 }
 
 .alert-banner.error {
-    /* overridden by !important */
+    background: var(--status-busy) !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35) !important;
+}
+
+.alert-banner.warning {
+    background: #f59e0b !important;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.35) !important;
+}
+
+.alert-banner.info {
+    background: #3b82f6 !important;
+    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35) !important;
 }
 
 .close-alert {
