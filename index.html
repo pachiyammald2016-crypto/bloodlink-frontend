@@ -88,7 +88,7 @@
                     <i class="fa-solid fa-hand-holding-heart"></i>
                     <span>Blood Requests</span>
                 </button>
-                <button class="nav-btn" data-tab="match" id="navAdminMatch" style="display: none;">
+                <button class="nav-btn" data-tab="match" id="navMatch">
                     <i class="fa-solid fa-circle-nodes"></i>
                     <span>Match Donors</span>
                 </button>
@@ -973,11 +973,9 @@
             // Check Admin Status on Load
             if (sessionStorage.getItem('admin_verified') === 'true') {
                 const donorsTab = document.getElementById('navAdminDonors');
-                const matchTab = document.getElementById('navAdminMatch');
                 const adminLoginBtn = document.getElementById('adminLoginBtn');
                 
                 if(donorsTab) donorsTab.style.display = 'flex';
-                if(matchTab) matchTab.style.display = 'flex';
                 if(adminLoginBtn) adminLoginBtn.style.display = 'none';
             }
         });
@@ -1341,7 +1339,6 @@
                 
                 // Reveal Admin Tabs
                 document.getElementById('navAdminDonors').style.display = 'flex';
-                document.getElementById('navAdminMatch').style.display = 'flex';
                 document.getElementById('adminLoginBtn').style.display = 'none';
 
                 if (pendingTargetTab) {
@@ -1354,7 +1351,7 @@
         }
 
         function switchTab(tabId) {
-            if (tabId === 'donors' || tabId === 'match') {
+            if (tabId === 'donors') {
                 const isAdmin = sessionStorage.getItem('admin_verified') === 'true';
                 if (!isAdmin) {
                     openAdminAuthModal(tabId);
