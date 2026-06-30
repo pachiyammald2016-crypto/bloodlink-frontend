@@ -1868,12 +1868,12 @@
                         <button class="btn btn-primary" onclick="startMatchForRequest('${group}', '${r.city}', '${area}')">
                             <i class="fa-solid fa-crosshairs"></i> Find Match
                         </button>
-                        <a href="tel:+91${r.phone}" class="btn btn-call">
+                        <button class="btn btn-call" onclick="handleContactAttender(event, '${r.phone}', '${group}')">
                             <i class="fa-solid fa-phone"></i> Call Attender
-                        </a>
-                        <a href="${waUrl}" target="_blank" class="btn btn-whatsapp">
+                        </button>
+                        <button class="btn btn-whatsapp" onclick="handleContactAttender(event, '${r.phone}', '${group}', true, '${encodeURIComponent(waMsg)}')">
                             <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                        </a>
+                        </button>
                         <button class="btn btn-outline" onclick="fulfillRequest(${r.id})">
                             <i class="fa-solid fa-check"></i> Fulfill
                         </button>
@@ -1881,6 +1881,55 @@
                 `;
                 feed.appendChild(card);
             });
+        }
+
+        // Logic to prevent direct access to attender contact details for non-matching donors
+        function handleContactAttender(event, phone, reqBloodGroup, isWhatsApp = false, waMsg = '') {
+            event.preventDefault();
+            
+            // Allow admins to bypass
+            if (sessionStorage.getItem('admin_verified') === 'true') {
+                proceedToContact(phone, isWhatsApp, waMsg);
+                return;
+            }
+            
+            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
+            if (!verifiedEmail) {
+                showAlert('Unable to access. Please Login or Register as a Donor first.', 'error');
+                return;
+            }
+            
+            let currentDonor = null;
+            if (typeof allLoadedDonors !== 'undefined' && allLoadedDonors.length > 0) {
+                currentDonor = allLoadedDonors.find(d => d.email === verifiedEmail);
+            }
+            if (!currentDonor) {
+                currentDonor = mockDonors.find(d => d.email === verifiedEmail);
+            }
+            
+            if (!currentDonor) {
+                showAlert('Unable to access. Donor profile not found.', 'error');
+                return;
+            }
+            
+            // Check compatibility using the reverse of COMPATIBILITY_MAP (Can currentDonor give to reqBloodGroup?)
+            // COMPATIBILITY_MAP[reqBloodGroup] returns a list of donors who CAN GIVE to the reqBloodGroup.
+            const compatibleGroups = COMPATIBILITY_MAP[reqBloodGroup] || [];
+            if (!compatibleGroups.includes(currentDonor.bloodGroup)) {
+                showAlert(`Unable to access. Your blood group (${currentDonor.bloodGroup}) does not match the patient's requirement (${reqBloodGroup}).`, 'error');
+                return;
+            }
+            
+            // If they are logged in and compatible, allow contact!
+            proceedToContact(phone, isWhatsApp, waMsg);
+        }
+        
+        function proceedToContact(phone, isWhatsApp, waMsg) {
+            if (isWhatsApp) {
+                window.open(`https://wa.me/91${phone}?text=${waMsg}`, '_blank');
+            } else {
+                window.location.href = `tel:+91${phone}`;
+            }
         }
 
         // Switch to Match tab and pre-fill matching inputs for a specific blood request hospital
