@@ -2489,10 +2489,22 @@
                 const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
                 
                 if (checkRes.ok) {
-                    // User exists, log them in
-                    document.getElementById('donorLoginEmail').value = email;
-                    document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
-                    handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
+                    // User exists, bypass password and log them in directly via Google!
+                    sessionStorage.setItem('donor_verified_email', email);
+                    localStorage.setItem('has_registered', 'true');
+                    
+                    // Pre-fill and lock the email input on the registration form
+                    const emailInput = document.getElementById('donorEmail');
+                    if (emailInput) {
+                        emailInput.value = email;
+                        emailInput.readOnly = true;
+                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    
+                    switchTab('register');
+                    checkExistingDonorAndSetupForm(email);
+                    showAlert('Logged in successfully via Google!', 'success');
+                    updateAuthUI();
                 } else if (checkRes.status === 404) {
                     // User does not exist, send to registration form
                     document.getElementById('donorSignUpEmail').value = email;
