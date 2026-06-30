@@ -1144,6 +1144,9 @@
                     showAlert('Logged in successfully!', 'success');
                 } else if (response.status === 404) {
                     showAlert('Account not found. Please sign up first.', 'warning');
+                    closeDonorLoginModal();
+                    openDonorSignUpModal();
+                    document.getElementById('donorSignUpEmail').value = email;
                 } else {
                     showAlert('Invalid email or password.', 'error');
                 }
@@ -2583,14 +2586,22 @@
             } else {
                 const headerActions = document.querySelector('.header-actions');
                 if (headerActions) {
-                    headerActions.innerHTML = `
-                        <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()">
-                            <i class="fa-solid fa-user-plus"></i> Sign Up
-                        </button>
-                        <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
-                            <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
-                        </button>
-                    `;
+                    if (localStorage.getItem('has_registered') === 'true') {
+                        headerActions.innerHTML = `
+                            <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                            </button>
+                        `;
+                    } else {
+                        headerActions.innerHTML = `
+                            <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()">
+                                <i class="fa-solid fa-user-plus"></i> Sign Up
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
+                                <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                            </button>
+                        `;
+                    }
                 }
                 
                 // Show password field in registration form
