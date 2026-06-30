@@ -1933,9 +1933,22 @@
                 }
             }
 
+            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
+            
             if (!success) {
-                donor.id = Date.now();
-                mockDonors.push(donor);
+                if (verifiedEmail) {
+                    const idx = mockDonors.findIndex(d => d.email === verifiedEmail);
+                    if (idx !== -1) {
+                        donor.id = mockDonors[idx].id;
+                        mockDonors[idx] = { ...mockDonors[idx], ...donor };
+                    } else {
+                        donor.id = Date.now();
+                        mockDonors.push(donor);
+                    }
+                } else {
+                    donor.id = Date.now();
+                    mockDonors.push(donor);
+                }
                 localStorage.setItem('bloodlink_donors', JSON.stringify(mockDonors));
             }
 
@@ -1944,18 +1957,16 @@
             document.getElementById('donorForm').reset();
             document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
             document.getElementById('donorAreaList').innerHTML = '';
-            // Re-fetch existing donor data to keep form populated correctly as 'Update Profile'
-            if (sessionStorage.getItem('donor_verified_email')) {
-                checkExistingDonorAndSetupForm(sessionStorage.getItem('donor_verified_email'));
+            
+            // Re-fetch existing donor data to keep form populated correctly in the background
+            if (verifiedEmail) {
+                checkExistingDonorAndSetupForm(verifiedEmail);
             }
             
-            // Switch to Home or stay on Register instead of Donors List
+            // Switch back to Home after update
             setTimeout(() => {
-                if (sessionStorage.getItem('donor_verified_email')) {
-                    switchTab('register');
-                } else {
-                    switchTab('home');
-                }
+                switchTab('home');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }, 1500);
             
             const emailInput = document.getElementById('donorEmail');
