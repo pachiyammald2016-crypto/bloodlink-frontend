@@ -7,9 +7,12 @@
     <!-- Google Fonts Outfit & Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     
     <link rel="stylesheet" href="styles.css">
     <style>
@@ -174,6 +177,17 @@
                     </div>
                 </div>
 
+                <!-- Live Map Section -->
+                <div class="live-map-section" style="margin-top: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="font-size: 1.5rem; font-weight: 600;"><i class="fa-solid fa-map-location-dot text-primary"></i> Live Donor Map</h2>
+                        <button class="btn btn-secondary btn-sm" onclick="initializeMap(true)">
+                            <i class="fa-solid fa-location-crosshairs"></i> Use My Location
+                        </button>
+                    </div>
+                    <div id="liveMap" style="width: 100%; height: 400px; border-radius: 16px; border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); z-index: 1;"></div>
+                </div>
+
                 <!-- Emergency Banner -->
                 <div class="emergency-notice-panel">
                     <div class="notice-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
@@ -246,14 +260,9 @@
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="donorEmail">Email Address</label>
+                                    <label for="donorEmail">Email Address <span class="required">*</span></label>
                                     <input type="email" id="donorEmail" placeholder="anbu@example.com" required>
                                 </div>
-                                <div class="form-group">
-                                    <label for="donorPassword">Password</label>
-                                    <input type="password" id="donorPassword" placeholder="••••••••" required>
-                                </div>
-
                                 <div class="form-group">
                                     <label for="donorLastDonation">Last Blood Donation Date</label>
                                     <input type="date" id="donorLastDonation">
@@ -769,15 +778,11 @@
         <div class="modal-content glass-card" style="max-width: 400px;">
             <span class="close-modal" onclick="closeDonorSignUpModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-plus text-primary"></i> Create Account</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up with your email and password to create a donor profile.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up to create a donor profile.</p>
             <form onsubmit="handleDonorSignUpSubmit(event)">
-                <div class="form-group" style="margin-bottom: 1rem;">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
                     <label for="donorSignUpEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
                     <input type="email" id="donorSignUpEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
-                </div>
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="donorSignUpPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
-                    <input type="password" id="donorSignUpPassword" required placeholder="••••••••" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Sign Up</button>
@@ -802,17 +807,13 @@
         <div class="modal-content glass-card" style="max-width: 400px;">
             <span class="close-modal" onclick="closeDonorLoginModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user text-primary"></i> Donor Login</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Log in with your email and password to update your donor profile.</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Log in with your email to access your donor profile.</p>
             <form onsubmit="handleDonorLoginSubmit(event)">
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="donorLoginEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
                     <input type="email" id="donorLoginEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="donorLoginPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
-                    <input type="password" id="donorLoginPassword" required placeholder="••••••••" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
-                </div>
-                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Login</button>
                     
                     <div style="display: flex; align-items: center; margin: 0.2rem 0;">
@@ -993,6 +994,11 @@
             setupToggleListeners();
             initializeMockData();
             checkApiConnection();
+            
+            // Initialize map with user location
+            setTimeout(() => {
+                initializeMap(true);
+            }, 1000);
             updateAuthUI();
             
             // Check Admin Status on Load
@@ -1026,7 +1032,6 @@
 
         function openDonorSignUpModal() {
             document.getElementById('donorSignUpEmail').value = '';
-            document.getElementById('donorSignUpPassword').value = '';
             document.getElementById('donorSignUpModal').classList.remove('hidden');
         }
 
@@ -1037,10 +1042,9 @@
         async function handleDonorSignUpSubmit(event) {
             event.preventDefault();
             const email = document.getElementById('donorSignUpEmail').value.trim();
-            const password = document.getElementById('donorSignUpPassword').value;
             
-            if (!email || !password) {
-                showAlert('Please enter both email and password.', 'error');
+            if (!email) {
+                showAlert('Please enter an email.', 'error');
                 return;
             }
 
@@ -1058,19 +1062,14 @@
                     
                     // Pre-fill and lock the email input on the registration form
                     const emailInput = document.getElementById('donorEmail');
-                    const pwdInput = document.getElementById('donorPassword');
                     
                     if (emailInput) {
                         emailInput.value = email;
                         emailInput.readOnly = true;
                         emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
                     }
-                    if (pwdInput) {
-                        pwdInput.value = password;
-                        pwdInput.readOnly = true;
-                        pwdInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                    }
                     
+                    // Proceed to registration tab
                     switchTab('register');
                     showAlert('Please complete your donor profile.', 'info');
                 } else {
@@ -1085,16 +1084,18 @@
         function handleRegisterDonorClick() {
             const isVerified = sessionStorage.getItem('donor_verified_email');
             if (isVerified) {
+                const hasRegistered = localStorage.getItem('has_registered');
+                if (hasRegistered === 'true') {
+                    showAlert('You are already registered! You can update your profile here.', 'info');
+                }
                 switchTab('register');
             } else {
-                showAlert('Please login to manage your donor profile.', 'info');
-                openDonorLoginModal();
+                openDonorSignUpModal();
             }
         }
 
         function openDonorLoginModal() {
             document.getElementById('donorLoginEmail').value = '';
-            document.getElementById('donorLoginPassword').value = '';
             document.getElementById('donorLoginModal').classList.remove('hidden');
         }
 
@@ -1105,45 +1106,37 @@
         async function handleDonorLoginSubmit(event) {
             event.preventDefault();
             const email = document.getElementById('donorLoginEmail').value.trim();
-            const password = document.getElementById('donorLoginPassword').value;
             
-            if (!email || !password) {
-                showAlert('Please enter both email and password.', 'error');
+            if (!email) {
+                showAlert('Please enter your email.', 'error');
                 return;
             }
 
             try {
-                const response = await fetch(`${API_BASE_URL}/donors/login`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                if (response.ok) {
-                    const donor = await response.json();
-                    closeDonorLoginModal();
-                    sessionStorage.setItem('donor_verified_email', email);
-                    localStorage.setItem('has_registered', 'true');
-                    
-                    // Pre-fill and lock the email input on the registration form
-                    const emailInput = document.getElementById('donorEmail');
-                    if (emailInput) {
-                        emailInput.value = email;
-                        emailInput.readOnly = true;
-                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                let userExists = false;
+                if (isLiveApi) {
+                    const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                    if (checkRes.ok) {
+                        userExists = true;
                     }
-                    
-                    switchTab('register');
-                    checkExistingDonorAndSetupForm(email);
-                    showAlert('Logged in successfully!', 'success');
-                    updateAuthUI();
-                } else if (response.status === 404) {
+                }
+                
+                if (!userExists) {
+                    const localExists = mockDonors.find(d => d.email === email);
+                    if (localExists) {
+                        userExists = true;
+                    }
+                }
+
+                if (userExists) {
+                    closeDonorLoginModal();
+                    openOtpModal(email);
+                    showAlert('OTP sent to your email! (Use 1234 for testing)', 'info');
+                } else {
                     showAlert('Account not found. Please sign up first.', 'warning');
                     closeDonorLoginModal();
                     openDonorSignUpModal();
                     document.getElementById('donorSignUpEmail').value = email;
-                } else {
-                    showAlert('Invalid email or password.', 'error');
                 }
             } catch (error) {
                 console.error('Error during login:', error);
@@ -1323,10 +1316,9 @@
             const latVal = document.getElementById('donorLat').value;
             const lngVal = document.getElementById('donorLng').value;
             const email = document.getElementById('donorEmail').value.trim();
-            const password = document.getElementById('donorPassword').value;
 
-            if (!email || !password) {
-                showAlert('Please provide both email and password.', 'error');
+            if (!email) {
+                showAlert('Please provide your email address.', 'error');
                 return;
             }
 
@@ -1337,7 +1329,6 @@
                 area: document.getElementById('donorArea').value,
                 phone: document.getElementById('donorPhone').value,
                 email: email,
-                password: password,
                 lastDonation: document.getElementById('donorLastDonation').value || null,
                 availability: document.getElementById('donorAvailability').checked,
                 bio: document.getElementById('donorBio').value,
@@ -1630,10 +1621,10 @@
 
         // Initialize Mock Data in LocalStorage (No default values)
         function initializeMockData() {
-            if (!localStorage.getItem('bloodlink_clean_db_v5')) {
-                localStorage.removeItem('bloodlink_donors');
-                localStorage.removeItem('bloodlink_requests');
-                localStorage.setItem('bloodlink_clean_db_v5', 'true');
+            if (!localStorage.getItem('bloodlink_clean_db_v6')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                localStorage.setItem('bloodlink_clean_db_v6', 'true');
             }
 
             if (!localStorage.getItem('bloodlink_donors')) {
@@ -2536,19 +2527,14 @@
                 } else if (checkRes.status === 404) {
                     // User does not exist, send to registration form
                     document.getElementById('donorSignUpEmail').value = email;
-                    document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
                     
                     // Simulate sign up submit (which pre-fills the form and goes to register tab)
                     const emailInput = document.getElementById('donorEmail');
-                    const pwdInput = document.getElementById('donorPassword');
                     
                     if (emailInput) {
                         emailInput.value = email;
                         emailInput.readOnly = true;
                         emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                    }
-                    if (pwdInput) {
-                        pwdInput.value = 'GoogleAuth123';
                     }
                     
                     sessionStorage.setItem('donor_verified_email', email);
@@ -2590,15 +2576,6 @@
                         </div>
                     `;
                 }
-                
-                // Hide password field in registration form
-                const pwdInput = document.getElementById('donorPassword');
-                if (pwdInput) {
-                    const pwdGroup = pwdInput.closest('.form-group');
-                    if (pwdGroup) pwdGroup.style.display = 'none';
-                    // We also set the password to a placeholder so validation doesn't fail
-                    pwdInput.value = 'AuthPlaceholder123';
-                }
             } else {
                 const headerActions = document.querySelector('.header-actions');
                 if (headerActions) {
@@ -2607,6 +2584,7 @@
                             <button class="btn btn-primary btn-sm" onclick="openDonorLoginModal()">
                                 <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
                             </button>
+                            <button class="btn btn-secondary btn-sm" onclick="openDonorSignUpModal()">Sign Up</button>
                         `;
                     } else {
                         headerActions.innerHTML = `
@@ -2619,8 +2597,6 @@
                         `;
                     }
                 }
-                
-                // Show password field in registration form
                 const pwdInput = document.getElementById('donorPassword');
                 if (pwdInput) {
                     const pwdGroup = pwdInput.closest('.form-group');
@@ -2629,6 +2605,7 @@
                 }
             }
         }
+
 
         function logoutDonor() {
             sessionStorage.removeItem('donor_id');
@@ -2639,8 +2616,6 @@
                 emailInput.readOnly = false;
                 emailInput.style.backgroundColor = 'rgba(0,0,0,0.3)';
             }
-            const pwdInput = document.getElementById('donorPassword');
-            if (pwdInput) pwdInput.value = '';
             
             document.getElementById('donorForm').reset();
             const formTitle = document.querySelector('#registerTab .form-header h2');
@@ -2653,6 +2628,79 @@
             updateAuthUI();
             switchTab('home');
             showAlert('Logged out successfully.', 'info');
+        }
+
+        // Map Initialization Logic
+        let leafletMap = null;
+        let mapMarkers = [];
+
+        function initializeMap(requestLocation = false) {
+            const mapContainer = document.getElementById('liveMap');
+            if (!mapContainer) return;
+            
+            if (!leafletMap) {
+                // Initialize map centered on Tamil Nadu by default
+                leafletMap = L.map('liveMap').setView([11.1271, 78.6569], 7);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                }).addTo(leafletMap);
+            }
+
+            if (requestLocation) {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        leafletMap.setView([lat, lng], 12);
+                        
+                        // Add a pulse marker for the user
+                        const userIcon = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: '<div style="background-color: #3498db; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(52, 152, 219, 0.8);"></div>',
+                            iconSize: [16, 16],
+                            iconAnchor: [8, 8]
+                        });
+                        L.marker([lat, lng], {icon: userIcon}).addTo(leafletMap).bindPopup('<b>Your Location</b>').openPopup();
+                        
+                    }, (error) => {
+                        console.error('Geolocation error:', error);
+                        if (window.location.protocol === 'file:') {
+                            showAlert('Location blocked by browser for local files. Please use Live Server.', 'error');
+                        } else {
+                            showAlert('Location access denied or unavailable.', 'warning');
+                        }
+                    });
+                } else {
+                    showAlert('Geolocation is not supported by this browser.', 'error');
+                }
+            }
+
+            // Plot Donors
+            plotDonorsOnMap();
+        }
+
+        function plotDonorsOnMap() {
+            if (!leafletMap) return;
+            
+            // Clear existing markers
+            mapMarkers.forEach(marker => leafletMap.removeLayer(marker));
+            mapMarkers = [];
+            
+            const donorsToMap = mockDonors.filter(d => d.latitude && d.longitude && d.availability !== false);
+            
+            donorsToMap.forEach(donor => {
+                const markerIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background-color: #ff4757; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(255, 71, 87, 0.8);"></div>',
+                    iconSize: [14, 14],
+                    iconAnchor: [7, 7]
+                });
+                const marker = L.marker([donor.latitude, donor.longitude], {icon: markerIcon}).addTo(leafletMap);
+                marker.bindPopup(`<b>${donor.bloodGroup}</b><br>${donor.city}<br>${donor.area || ''}`);
+                mapMarkers.push(marker);
+            });
         }
     </script>
 </body>
