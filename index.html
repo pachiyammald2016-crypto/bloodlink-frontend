@@ -50,7 +50,7 @@
             </div>
             
             <div style="display: flex; gap: 0.75rem; align-items: center;">
-                <button class="btn btn-primary btn-sm" onclick="switchTab('register')" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                     <i class="fa-solid fa-user-plus"></i> Sign Up
                 </button>
                 <button class="btn btn-secondary btn-sm" onclick="openDonorLoginModal()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);">
@@ -120,7 +120,7 @@
                         <h1>Connecting Lives, <br><span class="highlight">One Drop</span> at a Time</h1>
                         <p class="hero-subtitle">Find blood donors near you in Tamil Nadu instantly. Register as a donor today to save lives, or raise a direct request for emergency cases.</p>
                         <div class="hero-actions">
-                            <button class="btn btn-primary btn-lg" onclick="switchTab('register')">
+                            <button class="btn btn-primary btn-lg" onclick="handleRegisterDonorClick()">
                                 <i class="fa-solid fa-heart-pulse"></i> Register as Donor
                             </button>
                             <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
@@ -762,6 +762,29 @@
 
 
 
+    <!-- Donor Sign Up Modal -->
+    <div id="donorSignUpModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 400px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
+            <span class="close-modal" onclick="closeDonorSignUpModal()" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; cursor: pointer;">&times;</span>
+            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-plus text-primary"></i> Create Account</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up with your email and password to create a donor profile.</p>
+            <form onsubmit="handleDonorSignUpSubmit(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="donorSignUpEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
+                    <input type="email" id="donorSignUpEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="donorSignUpPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
+                    <input type="password" id="donorSignUpPassword" required placeholder="••••••••" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Sign Up</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center;">Already have an account? Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Donor Login Modal -->
     <div id="donorLoginModal" class="modal hidden">
         <div class="modal-content glass-card" style="max-width: 400px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
@@ -779,7 +802,7 @@
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Login</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); switchTab('register');" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center;">Don't have an account? Sign Up</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center;">Don't have an account? Sign Up</button>
                 </div>
             </form>
         </div>
@@ -974,6 +997,80 @@
         let pendingDonorData = null;
         let pendingLoginEmail = '';
 
+        function openDonorSignUpModal() {
+            document.getElementById('donorSignUpEmail').value = '';
+            document.getElementById('donorSignUpPassword').value = '';
+            document.getElementById('donorSignUpModal').classList.remove('hidden');
+        }
+
+        function closeDonorSignUpModal() {
+            document.getElementById('donorSignUpModal').classList.add('hidden');
+        }
+
+        async function handleDonorSignUpSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('donorSignUpEmail').value.trim();
+            const password = document.getElementById('donorSignUpPassword').value;
+            
+            if (!email || !password) {
+                showAlert('Please enter both email and password.', 'error');
+                return;
+            }
+
+            try {
+                // Check if email already exists
+                const response = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                if (response.ok) {
+                    // Email exists
+                    showAlert('Email already registered. Please login.', 'error');
+                    closeDonorSignUpModal();
+                    openDonorLoginModal();
+                } else if (response.status === 404) {
+                    // Email does not exist. Safe to register.
+                    closeDonorSignUpModal();
+                    
+                    // Pre-fill and lock the email input on the registration form
+                    const emailInput = document.getElementById('donorEmail');
+                    const pwdInput = document.getElementById('donorPassword');
+                    
+                    if (emailInput) {
+                        emailInput.value = email;
+                        emailInput.readOnly = true;
+                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    if (pwdInput) {
+                        pwdInput.value = password;
+                        pwdInput.readOnly = true;
+                        pwdInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    
+                    switchTab('register');
+                    showAlert('Please complete your donor profile.', 'info');
+                } else {
+                    showAlert('An error occurred checking email availability.', 'error');
+                }
+            } catch (error) {
+                console.error('Error during sign up check:', error);
+                showAlert('Failed to connect to backend server.', 'error');
+            }
+        }
+
+        function handleRegisterDonorClick() {
+            const isVerified = sessionStorage.getItem('donor_verified_email');
+            if (isVerified) {
+                switchTab('register');
+            } else {
+                const hasRegistered = localStorage.getItem('has_registered');
+                if (hasRegistered === 'true') {
+                    showAlert('Please login first to update your profile.', 'warning');
+                    openDonorLoginModal();
+                } else {
+                    showAlert('Please sign up first to register as a donor.', 'info');
+                    openDonorSignUpModal();
+                }
+            }
+        }
+
         function openDonorLoginModal() {
             document.getElementById('donorLoginEmail').value = '';
             document.getElementById('donorLoginPassword').value = '';
@@ -1005,6 +1102,7 @@
                     const donor = await response.json();
                     closeDonorLoginModal();
                     sessionStorage.setItem('donor_verified_email', email);
+                    localStorage.setItem('has_registered', 'true');
                     
                     // Pre-fill and lock the email input on the registration form
                     const emailInput = document.getElementById('donorEmail');
@@ -1811,6 +1909,7 @@
             }
 
             showAlert('Success! Donor registration submitted successfully.', 'success');
+            localStorage.setItem('has_registered', 'true');
             document.getElementById('donorForm').reset();
             document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
             document.getElementById('donorAreaList').innerHTML = '';
