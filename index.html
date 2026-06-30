@@ -2476,22 +2476,46 @@
             }
         });
 
-        function handleCredentialResponse(response) {
+        async function handleCredentialResponse(response) {
             try {
-                // Determine which modal is open to know if it's login or signup
-                const isSignupOpen = !document.getElementById('donorSignUpModal').classList.contains('hidden');
-                
                 const responsePayload = decodeJwtResponse(response.credential);
                 const email = responsePayload.email;
                 
-                if (isSignupOpen) {
-                    document.getElementById('donorSignUpEmail').value = email;
-                    document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
-                    handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
-                } else {
+                // Hide modals while checking
+                document.getElementById('donorSignUpModal').classList.add('hidden');
+                document.getElementById('donorLoginModal').classList.add('hidden');
+                
+                // Check if user already exists
+                const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                
+                if (checkRes.ok) {
+                    // User exists, log them in
                     document.getElementById('donorLoginEmail').value = email;
                     document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
                     handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
+                } else if (checkRes.status === 404) {
+                    // User does not exist, send to registration form
+                    document.getElementById('donorSignUpEmail').value = email;
+                    document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
+                    
+                    // Simulate sign up submit (which pre-fills the form and goes to register tab)
+                    const emailInput = document.getElementById('donorEmail');
+                    const pwdInput = document.getElementById('donorPassword');
+                    
+                    if (emailInput) {
+                        emailInput.value = email;
+                        emailInput.readOnly = true;
+                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    if (pwdInput) {
+                        pwdInput.value = 'GoogleAuth123';
+                    }
+                    
+                    sessionStorage.setItem('donor_verified_email', email);
+                    switchTab('register');
+                    showAlert('Google account verified! Please complete your registration.', 'success');
+                } else {
+                    showAlert('Failed to connect to backend server.', 'error');
                 }
             } catch (error) {
                 console.error("Error decoding JWT or logging in:", error);
