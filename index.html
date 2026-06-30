@@ -1787,7 +1787,15 @@
             const emptyState = document.getElementById('requestsEmptyState');
             feed.innerHTML = '';
 
-            const activeReqs = requests.filter(r => r.status === 'Active' || r.status === 'ACTIVE');
+            const isAdmin = sessionStorage.getItem('admin_verified') === 'true';
+            const myRequests = JSON.parse(localStorage.getItem('my_blood_requests') || '[]');
+
+            let activeReqs = requests.filter(r => r.status === 'Active' || r.status === 'ACTIVE');
+            
+            // Only admins see all requests. Normal users only see their own requests.
+            if (!isAdmin) {
+                activeReqs = activeReqs.filter(r => myRequests.includes(r.phone));
+            }
 
             if (activeReqs.length === 0) {
                 emptyState.classList.remove('hidden');
@@ -1866,13 +1874,9 @@
             });
         }
 
-        // Logic to prevent direct access to attender contact details
         function handleContactAttender(event, phone, reqBloodGroup, isWhatsApp = false, waMsg = '') {
             event.preventDefault();
-            
-            // User requested that no other users can access the blood request details
-            showAlert("Other users can't access it. Only the person who made the request can view these details.", 'error');
-            return;
+            proceedToContact(phone, isWhatsApp, waMsg);
         }
         
         function proceedToContact(phone, isWhatsApp, waMsg) {
@@ -2038,6 +2042,12 @@
                 request.createdAt = new Date().toISOString();
                 mockRequests.push(request);
                 localStorage.setItem('bloodlink_requests', JSON.stringify(mockRequests));
+            }
+            
+            let myRequests = JSON.parse(localStorage.getItem('my_blood_requests') || '[]');
+            if (!myRequests.includes(request.phone)) {
+                myRequests.push(request.phone);
+                localStorage.setItem('my_blood_requests', JSON.stringify(myRequests));
             }
 
             sessionStorage.setItem('active_blood_request', 'true');
