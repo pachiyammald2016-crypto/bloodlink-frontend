@@ -787,6 +787,50 @@
             </form>
         </div>
     </div>
+    <!-- Email Preview Modal -->
+    <div id="emailPreviewModal" class="modal hidden" style="z-index: 9999; backdrop-filter: blur(10px);">
+        <div class="modal-content" style="max-width: 500px; padding: 0; overflow: hidden; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
+            <div style="background: linear-gradient(135deg, #e63946, #9b2226); padding: 2.5rem 2rem; text-align: center; position: relative;">
+                <div style="position: absolute; top: 10px; right: 15px; font-size: 0.8rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 5px;">
+                    <i class="fa-brands fa-google"></i> Gmail Inbox
+                </div>
+                <div style="width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+                    <i class="fa-solid fa-envelope-open-text" style="font-size: 2.2rem; color: #e63946;"></i>
+                </div>
+                <h2 style="color: white; margin: 0; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.5px;">BloodLink Donor</h2>
+                <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1rem;">Welcome to the Lifesavers Community!</p>
+            </div>
+            <div style="padding: 2rem; background: #16213e;">
+                <p style="font-size: 1.1rem; margin-bottom: 1rem; color: #e0e0e0;">Hi <strong id="epName" style="color: #e63946;"></strong>,</p>
+                <p style="color: #a0aabf; line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem;">
+                    Thank you for registering as a blood donor on BloodLink. Your willingness to donate blood can save countless lives. Below are your registration details:
+                </p>
+                <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
+                        <span style="color: #a0aabf; font-size: 0.9rem;">Blood Group</span>
+                        <strong id="epBloodGroup" style="color: #e63946; font-size: 1.2rem; text-shadow: 0 0 10px rgba(230,57,70,0.3);"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
+                        <span style="color: #a0aabf; font-size: 0.9rem;">Location</span>
+                        <strong id="epLocation" style="color: #e0e0e0; font-size: 0.95rem; text-align: right; max-width: 60%;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
+                        <span style="color: #a0aabf; font-size: 0.9rem;">Phone</span>
+                        <strong id="epPhone" style="color: #e0e0e0; font-size: 0.95rem;"></strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span style="color: #a0aabf; font-size: 0.9rem;">Email</span>
+                        <strong id="epEmail" style="color: #e0e0e0; font-size: 0.95rem;"></strong>
+                    </div>
+                </div>
+                <div style="margin-top: 2rem; text-align: center;">
+                    <button type="button" onclick="closeEmailPreviewModal()" style="padding: 0.7rem 2.5rem; border-radius: 30px; background: #e63946; color: white; border: none; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(230,57,70,0.4);">
+                        <i class="fa-solid fa-check" style="margin-right: 5px;"></i> Got it
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Donor Login Modal -->
     <div id="donorLoginModal" class="modal hidden">
@@ -1957,11 +2001,12 @@
                 }
                 localStorage.setItem('bloodlink_donors', JSON.stringify(mockDonors));
             }
-
             showAlert('Success! Donor registration submitted successfully.', 'success');
             localStorage.setItem('has_registered', 'true');
             document.getElementById('donorForm').reset();
             document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
+            
+            showEmailPreviewModal(donor);
             document.getElementById('donorAreaList').innerHTML = '';
             
             // Re-fetch existing donor data to keep form populated correctly in the background
@@ -2090,6 +2135,20 @@
                 showAlert('Blood request marked as fulfilled!', 'success');
                 loadRequests();
             }
+        }
+
+        function showEmailPreviewModal(donor) {
+            document.getElementById('epName').textContent = donor.name;
+            document.getElementById('epBloodGroup').textContent = donor.bloodGroup || donor.blood_group;
+            document.getElementById('epLocation').textContent = donor.area + ", " + donor.city;
+            document.getElementById('epPhone').textContent = "+91 " + donor.phone;
+            document.getElementById('epEmail').textContent = donor.email;
+            
+            document.getElementById('emailPreviewModal').classList.remove('hidden');
+        }
+
+        function closeEmailPreviewModal() {
+            document.getElementById('emailPreviewModal').classList.add('hidden');
         }
 
         // Match Donors and calculate relative proximity
