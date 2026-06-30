@@ -779,7 +779,19 @@
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Sign Up</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center;">Already have an account? Login</button>
+                    
+                    <div style="display: flex; align-items: center; margin: 0.2rem 0;">
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                        <span style="padding: 0 10px; font-size: 0.8rem; color: var(--text-muted);">OR</span>
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline" onclick="mockGoogleAuth('signup')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
+                        Continue with Google
+                    </button>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Already have an account? Login</button>
                 </div>
             </form>
         </div>
@@ -802,7 +814,19 @@
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Login</button>
-                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center;">Don't have an account? Sign Up</button>
+                    
+                    <div style="display: flex; align-items: center; margin: 0.2rem 0;">
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                        <span style="padding: 0 10px; font-size: 0.8rem; color: var(--text-muted);">OR</span>
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                    </div>
+                    
+                    <button type="button" class="btn btn-outline" onclick="mockGoogleAuth('login')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
+                        Continue with Google
+                    </button>
+                    
+                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Don't have an account? Sign Up</button>
                 </div>
             </form>
         </div>
@@ -1360,6 +1384,13 @@
             }
             if (tabId === 'register') {
                 // Anyone can access the registration tab now
+            }
+            if (tabId === 'match') {
+                if (sessionStorage.getItem('active_blood_request') !== 'true') {
+                    showAlert('Please submit a blood request first.', 'warning');
+                    switchTab('request');
+                    return;
+                }
             }
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -1990,12 +2021,16 @@
                 localStorage.setItem('bloodlink_requests', JSON.stringify(mockRequests));
             }
 
+            sessionStorage.setItem('active_blood_request', 'true');
             showAlert('Success! Emergency blood request posted to the board.', 'success');
             document.getElementById('requestForm').reset();
             document.getElementById('reqAreaList').innerHTML = '';
 
             setTimeout(() => {
-                switchTab('requests-feed');
+                document.getElementById('matchBloodGroup').value = request.bloodGroup;
+                document.getElementById('matchDistrict').value = request.city;
+                if(request.hospital) document.getElementById('matchHospital').value = request.hospital;
+                switchTab('match');
             }, 800);
         }
 
@@ -2405,6 +2440,22 @@
         function closeAlert() {
             const banner = document.getElementById('alertBanner');
             banner.className = 'alert-banner hidden';
+        }
+
+        // Mock Google Authentication
+        function mockGoogleAuth(type) {
+            const email = prompt("Google Sign-In\n\nPlease select/enter your Google email address to continue:");
+            if (email) {
+                if (type === 'signup') {
+                    document.getElementById('donorSignUpEmail').value = email;
+                    document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
+                    handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
+                } else {
+                    document.getElementById('donorLoginEmail').value = email;
+                    document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
+                    handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
+                }
+            }
         }
     </script>
 </body>
