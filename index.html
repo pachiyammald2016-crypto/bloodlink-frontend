@@ -2537,59 +2537,24 @@
                 document.getElementById('donorSignUpModal').classList.add('hidden');
                 document.getElementById('donorLoginModal').classList.add('hidden');
                 
-                // Check if user already exists
-                let userExists = false;
+                pendingLoginEmail = email; // Save for OTP verification
+                
+                // Force OTP Verification even for Google Sign-In as per admin request
                 if (isLiveApi) {
                     try {
-                        const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
-                        if (checkRes.ok) {
-                            userExists = true;
+                        const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                        if (otpRes.ok) {
+                            openOtpModal(email);
+                            showAlert('OTP sent to your email! Please check your inbox.', 'success');
+                        } else {
+                            showAlert('Failed to send OTP. Please try again.', 'error');
                         }
-                    } catch(e) {
-                        console.error('API check failed', e);
+                    } catch (err) {
+                        showAlert('Failed to connect to backend server for OTP.', 'error');
                     }
-                }
-                
-                if (!userExists) {
-                    const localExists = mockDonors.find(d => d.email === email);
-                    if (localExists) {
-                        userExists = true;
-                    }
-                }
-                
-                if (userExists) {
-                    // User exists, log them in directly via Google!
-                    sessionStorage.setItem('donor_verified_email', email);
-                    localStorage.setItem('has_registered', 'true');
-                    
-                    // Pre-fill and lock the email input on the registration form
-                    const emailInput = document.getElementById('donorEmail');
-                    if (emailInput) {
-                        emailInput.value = email;
-                        emailInput.readOnly = true;
-                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                    }
-                    
-                    switchTab('register');
-                    checkExistingDonorAndSetupForm(email);
-                    showAlert('Logged in successfully via Google!', 'success');
-                    updateAuthUI();
                 } else {
-                    // User does not exist, send to registration form
-                    document.getElementById('donorSignUpEmail').value = email;
-                    
-                    // Simulate sign up submit (which pre-fills the form and goes to register tab)
-                    const emailInput = document.getElementById('donorEmail');
-                    
-                    if (emailInput) {
-                        emailInput.value = email;
-                        emailInput.readOnly = true;
-                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
-                    }
-                    
-                    sessionStorage.setItem('donor_verified_email', email);
-                    switchTab('register');
-                    showAlert('Google account verified! Please complete your registration.', 'success');
+                    openOtpModal(email);
+                    showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
                 }
             } catch (error) {
                 console.error("Error decoding JWT or logging in:", error);
