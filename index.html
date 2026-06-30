@@ -832,6 +832,51 @@
         </div>
     </div>
 
+    <!-- Google Auth Mock Modal -->
+    <style>
+        .google-account-item:hover { background-color: #f1f3f4 !important; }
+    </style>
+    <div id="googleAuthModal" class="modal hidden" style="z-index: 2000; background: rgba(0,0,0,0.5);">
+        <div class="modal-content" style="max-width: 400px; background: white; color: #202124; border-radius: 8px; padding: 0; overflow: hidden; border: 1px solid #dadce0;">
+            <div style="padding: 24px 24px 0 24px; text-align: center;">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" style="height: 24px; margin-bottom: 16px;">
+                <h2 style="font-family: 'Google Sans', arial, sans-serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 8px;">Sign in</h2>
+                <p style="font-size: 1rem; margin-bottom: 32px;">to continue to BloodLink</p>
+            </div>
+            
+            <div style="padding: 0;">
+                <!-- Account 1 -->
+                <div class="google-account-item" onclick="selectGoogleAccount('johndoe@gmail.com')" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 1rem; margin-right: 12px;">J</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; font-size: 0.9rem; margin-bottom: 2px;">John Doe</div>
+                        <div style="font-size: 0.8rem; color: #5f6368;">johndoe@gmail.com</div>
+                    </div>
+                </div>
+                <!-- Account 2 -->
+                <div class="google-account-item" onclick="selectGoogleAccount('sarahsmith@gmail.com')" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
+                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #d93025; color: white; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 1rem; margin-right: 12px;">S</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 500; font-size: 0.9rem; margin-bottom: 2px;">Sarah Smith</div>
+                        <div style="font-size: 0.8rem; color: #5f6368;">sarahsmith@gmail.com</div>
+                    </div>
+                </div>
+                <!-- Use another account -->
+                <div class="google-account-item" onclick="closeGoogleAuthModal()" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; transition: background 0.2s;">
+                    <div style="width: 32px; height: 32px; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: #5f6368;">
+                        <i class="fa-solid fa-user-circle" style="font-size: 1.2rem;"></i>
+                    </div>
+                    <div style="font-weight: 500; font-size: 0.9rem; color: #3c4043;">Use another account</div>
+                </div>
+            </div>
+            
+            <div style="padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
+                <span style="font-size: 0.85rem; color: #1a73e8; cursor: pointer;">English (United States)</span>
+                <span style="font-size: 0.85rem; color: #5f6368;">Help &nbsp;&nbsp; Privacy &nbsp;&nbsp; Terms</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Authentication Modal -->
     <div id="adminAuthModal" class="modal hidden">
         <div class="modal-content glass-card" style="max-width: 380px;">
@@ -2443,19 +2488,30 @@
         }
 
         // Mock Google Authentication
+        let pendingGoogleAuthType = '';
+
         function mockGoogleAuth(type) {
-            const email = prompt("Google Sign-In\n\nPlease select/enter your Google email address to continue:");
-            if (email) {
-                if (type === 'signup') {
-                    document.getElementById('donorSignUpEmail').value = email;
-                    document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
-                    handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
-                } else {
-                    document.getElementById('donorLoginEmail').value = email;
-                    document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
-                    handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
-                }
+            pendingGoogleAuthType = type;
+            document.getElementById('donorSignUpModal').classList.add('hidden');
+            document.getElementById('donorLoginModal').classList.add('hidden');
+            document.getElementById('googleAuthModal').classList.remove('hidden');
+        }
+
+        function selectGoogleAccount(email) {
+            closeGoogleAuthModal();
+            if (pendingGoogleAuthType === 'signup') {
+                document.getElementById('donorSignUpEmail').value = email;
+                document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
+                handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
+            } else {
+                document.getElementById('donorLoginEmail').value = email;
+                document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
+                handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
             }
+        }
+
+        function closeGoogleAuthModal() {
+            document.getElementById('googleAuthModal').classList.add('hidden');
         }
     </script>
 </body>
