@@ -1018,9 +1018,7 @@
                     checkExistingDonorAndSetupForm(email);
                     showAlert('Logged in successfully!', 'success');
                 } else if (response.status === 404) {
-                    closeDonorLoginModal();
-                    switchTab('register');
-                    showAlert('Please sign up first.', 'warning');
+                    showAlert('Account not found. Please sign up first.', 'warning');
                 } else {
                     showAlert('Invalid email or password.', 'error');
                 }
