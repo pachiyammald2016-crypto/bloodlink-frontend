@@ -2505,10 +2505,27 @@
                 document.getElementById('donorLoginModal').classList.add('hidden');
                 
                 // Check if user already exists
-                const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                let userExists = false;
+                if (isLiveApi) {
+                    try {
+                        const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                        if (checkRes.ok) {
+                            userExists = true;
+                        }
+                    } catch(e) {
+                        console.error('API check failed', e);
+                    }
+                }
                 
-                if (checkRes.ok) {
-                    // User exists, bypass password and log them in directly via Google!
+                if (!userExists) {
+                    const localExists = mockDonors.find(d => d.email === email);
+                    if (localExists) {
+                        userExists = true;
+                    }
+                }
+                
+                if (userExists) {
+                    // User exists, log them in directly via Google!
                     sessionStorage.setItem('donor_verified_email', email);
                     localStorage.setItem('has_registered', 'true');
                     
@@ -2524,7 +2541,7 @@
                     checkExistingDonorAndSetupForm(email);
                     showAlert('Logged in successfully via Google!', 'success');
                     updateAuthUI();
-                } else if (checkRes.status === 404) {
+                } else {
                     // User does not exist, send to registration form
                     document.getElementById('donorSignUpEmail').value = email;
                     
@@ -2540,8 +2557,6 @@
                     sessionStorage.setItem('donor_verified_email', email);
                     switchTab('register');
                     showAlert('Google account verified! Please complete your registration.', 'success');
-                } else {
-                    showAlert('Failed to connect to backend server.', 'error');
                 }
             } catch (error) {
                 console.error("Error decoding JWT or logging in:", error);
