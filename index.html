@@ -49,7 +49,7 @@
                 <span class="logo-text">Blood<span>Link</span></span>
             </div>
             
-            <div style="display: flex; gap: 0.75rem; align-items: center;">
+            <div class="header-actions">
                 <button class="btn btn-primary btn-sm" onclick="openDonorSignUpModal()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
                     <i class="fa-solid fa-user-plus"></i> Sign Up
                 </button>
@@ -764,8 +764,8 @@
 
     <!-- Donor Sign Up Modal -->
     <div id="donorSignUpModal" class="modal hidden">
-        <div class="modal-content glass-card" style="max-width: 400px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
-            <span class="close-modal" onclick="closeDonorSignUpModal()" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; cursor: pointer;">&times;</span>
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeDonorSignUpModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-plus text-primary"></i> Create Account</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up with your email and password to create a donor profile.</p>
             <form onsubmit="handleDonorSignUpSubmit(event)">
@@ -787,8 +787,8 @@
 
     <!-- Donor Login Modal -->
     <div id="donorLoginModal" class="modal hidden">
-        <div class="modal-content glass-card" style="max-width: 400px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
-            <span class="close-modal" onclick="closeDonorLoginModal()" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; cursor: pointer;">&times;</span>
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeDonorLoginModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user text-primary"></i> Donor Login</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Log in with your email and password to update your donor profile.</p>
             <form onsubmit="handleDonorLoginSubmit(event)">
@@ -810,8 +810,8 @@
 
     <!-- Admin Authentication Modal -->
     <div id="adminAuthModal" class="modal hidden">
-        <div class="modal-content glass-card" style="max-width: 380px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
-            <span class="close-modal" onclick="closeAdminAuthModal()" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; cursor: pointer;">&times;</span>
+        <div class="modal-content glass-card" style="max-width: 380px;">
+            <span class="close-modal" onclick="closeAdminAuthModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-lock text-primary"></i> Admin Verification</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">This directory is restricted. Enter the Admin Password to unlock access.</p>
             <form onsubmit="handleAdminAuthSubmit(event)">
@@ -829,8 +829,8 @@
 
     <!-- Email OTP Verification Modal -->
     <div id="otpModal" class="modal hidden">
-        <div class="modal-content glass-card" style="max-width: 400px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
-            <span class="close-modal" onclick="closeOtpModal()" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; cursor: pointer;">&times;</span>
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeOtpModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-envelope-circle-check text-primary"></i> OTP Verification</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">We have sent a 4-digit verification code to <strong id="otpTargetEmail"></strong> via Email. Enter it below to continue.</p>
             <form onsubmit="handleOtpSubmit(event)">
