@@ -787,50 +787,6 @@
             </form>
         </div>
     </div>
-    <!-- Email Preview Modal -->
-    <div id="emailPreviewModal" class="modal hidden" style="z-index: 9999; backdrop-filter: blur(10px);">
-        <div class="modal-content" style="max-width: 500px; padding: 0; overflow: hidden; background: #1a1a2e; border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
-            <div style="background: linear-gradient(135deg, #e63946, #9b2226); padding: 2.5rem 2rem; text-align: center; position: relative;">
-                <div style="position: absolute; top: 10px; right: 15px; font-size: 0.8rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 5px;">
-                    <i class="fa-brands fa-google"></i> Gmail Inbox
-                </div>
-                <div style="width: 70px; height: 70px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
-                    <i class="fa-solid fa-envelope-open-text" style="font-size: 2.2rem; color: #e63946;"></i>
-                </div>
-                <h2 style="color: white; margin: 0; font-size: 1.8rem; font-weight: 700; letter-spacing: 0.5px;">BloodLink Donor</h2>
-                <p style="color: rgba(255,255,255,0.9); margin-top: 0.5rem; font-size: 1rem;">Welcome to the Lifesavers Community!</p>
-            </div>
-            <div style="padding: 2rem; background: #16213e;">
-                <p style="font-size: 1.1rem; margin-bottom: 1rem; color: #e0e0e0;">Hi <strong id="epName" style="color: #e63946;"></strong>,</p>
-                <p style="color: #a0aabf; line-height: 1.6; margin-bottom: 1.5rem; font-size: 0.95rem;">
-                    Thank you for registering as a blood donor on BloodLink. Your willingness to donate blood can save countless lives. Below are your registration details:
-                </p>
-                <div style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
-                        <span style="color: #a0aabf; font-size: 0.9rem;">Blood Group</span>
-                        <strong id="epBloodGroup" style="color: #e63946; font-size: 1.2rem; text-shadow: 0 0 10px rgba(230,57,70,0.3);"></strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
-                        <span style="color: #a0aabf; font-size: 0.9rem;">Location</span>
-                        <strong id="epLocation" style="color: #e0e0e0; font-size: 0.95rem; text-align: right; max-width: 60%;"></strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.8rem; margin-bottom: 0.8rem;">
-                        <span style="color: #a0aabf; font-size: 0.9rem;">Phone</span>
-                        <strong id="epPhone" style="color: #e0e0e0; font-size: 0.95rem;"></strong>
-                    </div>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span style="color: #a0aabf; font-size: 0.9rem;">Email</span>
-                        <strong id="epEmail" style="color: #e0e0e0; font-size: 0.95rem;"></strong>
-                    </div>
-                </div>
-                <div style="margin-top: 2rem; text-align: center;">
-                    <button type="button" onclick="closeEmailPreviewModal()" style="padding: 0.7rem 2.5rem; border-radius: 30px; background: #e63946; color: white; border: none; font-weight: 600; font-size: 1rem; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(230,57,70,0.4);">
-                        <i class="fa-solid fa-check" style="margin-right: 5px;"></i> Got it
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Donor Login Modal -->
     <div id="donorLoginModal" class="modal hidden">
@@ -890,8 +846,8 @@
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">We have sent a 4-digit verification code to <strong id="otpTargetEmail"></strong> via Email. Enter it below to continue.</p>
             <form onsubmit="handleOtpSubmit(event)">
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="otpCode" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Enter 4-Digit OTP</label>
-                    <input type="text" id="otpCode" maxlength="4" required placeholder="e.g. 1234" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 1.1rem; text-align: center; letter-spacing: 8px;">
+                    <label for="otpCode" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Enter 6-Digit OTP</label>
+                    <input type="text" id="otpCode" maxlength="6" required placeholder="e.g. 123456" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 1.1rem; text-align: center; letter-spacing: 8px;">
                 </div>
                 <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
                     <button type="button" class="btn btn-secondary" onclick="closeOtpModal()" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Cancel</button>
@@ -1085,20 +1041,27 @@
                     openDonorLoginModal();
                 } else if (response.status === 404) {
                     // Email does not exist. Safe to register.
-                    closeDonorSignUpModal();
+                    pendingLoginEmail = email; // Save for OTP verification
                     
-                    // Pre-fill and lock the email input on the registration form
-                    const emailInput = document.getElementById('donorEmail');
-                    
-                    if (emailInput) {
-                        emailInput.value = email;
-                        emailInput.readOnly = true;
-                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    if (isLiveApi) {
+                        try {
+                            const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                            if (otpRes.ok) {
+                                closeDonorSignUpModal();
+                                openOtpModal(email);
+                                showAlert('OTP sent to your email! Please check your inbox.', 'success');
+                            } else {
+                                showAlert('Failed to send OTP. Please try again.', 'error');
+                            }
+                        } catch (err) {
+                            showAlert('Failed to connect to backend server for OTP.', 'error');
+                        }
+                    } else {
+                        // Offline fallback
+                        closeDonorSignUpModal();
+                        openOtpModal(email);
+                        showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
                     }
-                    
-                    // Proceed to registration tab
-                    switchTab('register');
-                    showAlert('Please complete your donor profile.', 'info');
                 } else {
                     showAlert('An error occurred checking email availability.', 'error');
                 }
@@ -1156,9 +1119,25 @@
                 }
 
                 if (userExists) {
-                    closeDonorLoginModal();
-                    openOtpModal(email);
-                    showAlert('OTP sent to your email! (Use 1234 for testing)', 'info');
+                    pendingLoginEmail = email;
+                    if (isLiveApi) {
+                        try {
+                            const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                            if (otpRes.ok) {
+                                closeDonorLoginModal();
+                                openOtpModal(email);
+                                showAlert('OTP sent to your email! Please check your inbox.', 'success');
+                            } else {
+                                showAlert('Failed to send OTP. Please try again.', 'error');
+                            }
+                        } catch (err) {
+                            showAlert('Failed to connect to backend server for OTP.', 'error');
+                        }
+                    } else {
+                        closeDonorLoginModal();
+                        openOtpModal(email);
+                        showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
+                    }
                 } else {
                     showAlert('Account not found. Please sign up first.', 'warning');
                     closeDonorLoginModal();
@@ -1281,13 +1260,13 @@
         async function handleOtpSubmit(event) {
             event.preventDefault();
             const code = document.getElementById('otpCode').value.trim();
-            if (code.length !== 4) {
-                showAlert('Please enter a valid 4-digit code.', 'error');
+            if (code.length !== 6) {
+                showAlert('Please enter a valid 6-digit code.', 'error');
                 return;
             }
 
             if (!isLiveApi) {
-                if (code === '1234') {
+                if (code === '123456') {
                     closeOtpModal();
                     sessionStorage.setItem('donor_verified_email', pendingLoginEmail);
                     
@@ -1302,7 +1281,7 @@
                     switchTab('register');
                     checkExistingDonorAndSetupForm(pendingLoginEmail);
                 } else {
-                    showAlert('Invalid OTP. Please enter 1234 for Offline Mode.', 'error');
+                    showAlert('Invalid OTP. Please enter 123456 for Offline Mode.', 'error');
                 }
                 return;
             }
@@ -2005,8 +1984,6 @@
             localStorage.setItem('has_registered', 'true');
             document.getElementById('donorForm').reset();
             document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
-            
-            showEmailPreviewModal(donor);
             document.getElementById('donorAreaList').innerHTML = '';
             
             // Re-fetch existing donor data to keep form populated correctly in the background
@@ -2137,19 +2114,6 @@
             }
         }
 
-        function showEmailPreviewModal(donor) {
-            document.getElementById('epName').textContent = donor.name;
-            document.getElementById('epBloodGroup').textContent = donor.bloodGroup || donor.blood_group;
-            document.getElementById('epLocation').textContent = donor.area + ", " + donor.city;
-            document.getElementById('epPhone').textContent = "+91 " + donor.phone;
-            document.getElementById('epEmail').textContent = donor.email;
-            
-            document.getElementById('emailPreviewModal').classList.remove('hidden');
-        }
-
-        function closeEmailPreviewModal() {
-            document.getElementById('emailPreviewModal').classList.add('hidden');
-        }
 
         // Match Donors and calculate relative proximity
         async function findMatches(event) {
