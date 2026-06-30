@@ -788,10 +788,8 @@
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
                     </div>
                     
-                    <button type="button" class="btn btn-outline" onclick="triggerGoogleAuth('signup')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
-                        Continue with Google
-                    </button>
+                    <!-- Official Google Sign-In Button Container -->
+                    <div id="googleSignInBtnSignup" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
                     
                     <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Already have an account? Login</button>
                 </div>
@@ -823,10 +821,8 @@
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
                     </div>
                     
-                    <button type="button" class="btn btn-outline" onclick="triggerGoogleAuth('login')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
-                        Continue with Google
-                    </button>
+                    <!-- Official Google Sign-In Button Container -->
+                    <div id="googleSignInBtnLogin" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
                     
                     <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Don't have an account? Sign Up</button>
                 </div>
@@ -2452,8 +2448,6 @@
         // Initialize Google Identity Services
         window.addEventListener('load', () => {
             if (window.google && google.accounts) {
-                // To make this fully functional, replace this placeholder with a valid Google Client ID 
-                // created in the Google Cloud Console for this domain.
                 const clientId = "200358748645-usb9u4rgditk3ddtfnb4bg89nhsejq8b.apps.googleusercontent.com";
                 
                 google.accounts.id.initialize({
@@ -2461,15 +2455,36 @@
                     callback: handleCredentialResponse,
                     cancel_on_tap_outside: false
                 });
+
+                // Render the official Google buttons in our modals
+                const signupBtnContainer = document.getElementById('googleSignInBtnSignup');
+                const loginBtnContainer = document.getElementById('googleSignInBtnLogin');
+                
+                if (signupBtnContainer) {
+                    google.accounts.id.renderButton(
+                        signupBtnContainer,
+                        { theme: "outline", size: "large", width: 350 }
+                    );
+                }
+                
+                if (loginBtnContainer) {
+                    google.accounts.id.renderButton(
+                        loginBtnContainer,
+                        { theme: "outline", size: "large", width: 350 }
+                    );
+                }
             }
         });
 
         function handleCredentialResponse(response) {
             try {
+                // Determine which modal is open to know if it's login or signup
+                const isSignupOpen = !document.getElementById('donorSignUpModal').classList.contains('hidden');
+                
                 const responsePayload = decodeJwtResponse(response.credential);
                 const email = responsePayload.email;
                 
-                if (pendingGoogleAuthType === 'signup') {
+                if (isSignupOpen) {
                     document.getElementById('donorSignUpEmail').value = email;
                     document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
                     handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
@@ -2493,22 +2508,7 @@
             return JSON.parse(jsonPayload);
         }
 
-        function triggerGoogleAuth(type) {
-            pendingGoogleAuthType = type;
-            document.getElementById('donorSignUpModal').classList.add('hidden');
-            document.getElementById('donorLoginModal').classList.add('hidden');
-            
-            if (window.google && google.accounts) {
-                google.accounts.id.prompt((notification) => {
-                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-                        console.warn("Google One Tap not displayed:", notification.getNotDisplayedReason());
-                        showAlert('Google Sign-In is blocked or Client ID is missing/invalid.', 'warning');
-                    }
-                });
-            } else {
-                showAlert('Google Sign-In script failed to load.', 'error');
-            }
-        }
+
     </script>
 </body>
 </html>
