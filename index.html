@@ -109,7 +109,10 @@
                         <p class="hero-subtitle">Find blood donors near you in Tamil Nadu instantly. Register as a donor today to save lives, or raise a direct request for emergency cases.</p>
                         <div class="hero-actions">
                             <button class="btn btn-primary btn-lg" onclick="switchTab('register')">
-                                <i class="fa-solid fa-heart-pulse"></i> Register as Donor
+                                <i class="fa-solid fa-heart-pulse"></i> Sign Up
+                            </button>
+                            <button class="btn btn-secondary btn-lg" onclick="openDonorLoginModal()" style="border-color: var(--primary-color); color: var(--primary-color);">
+                                <i class="fa-solid fa-user"></i> Login
                             </button>
                             <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
                                 <i class="fa-solid fa-truck-medical"></i> Request Blood
@@ -233,7 +236,11 @@
 
                                 <div class="form-group">
                                     <label for="donorEmail">Email Address</label>
-                                    <input type="email" id="donorEmail" placeholder="anbu@example.com">
+                                    <input type="email" id="donorEmail" placeholder="anbu@example.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="donorPassword">Password</label>
+                                    <input type="password" id="donorPassword" placeholder="••••••••" required>
                                 </div>
 
                                 <div class="form-group">
@@ -750,16 +757,20 @@
     <div id="donorLoginModal" class="modal hidden">
         <div class="modal-content glass-card" style="max-width: 400px; padding: 2rem; border-radius: 16px; border: 1px solid rgba(255,255,255,0.15); box-shadow: var(--shadow-premium);">
             <span class="close-modal" onclick="closeDonorLoginModal()" style="position: absolute; top: 1rem; right: 1.25rem; font-size: 1.5rem; cursor: pointer;">&times;</span>
-            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-envelope text-primary"></i> Donor Login</h3>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Enter your email address to receive a secure verification code before registering.</p>
+            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user text-primary"></i> Donor Login</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Log in with your email and password to update your donor profile.</p>
             <form onsubmit="handleDonorLoginSubmit(event)">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="donorLoginEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
                     <input type="email" id="donorLoginEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
-                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal()" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Cancel</button>
-                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Send Email OTP</button>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="donorLoginPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
+                    <input type="password" id="donorLoginPassword" required placeholder="••••••••" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;">Login</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); switchTab('register');" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center;">Don't have an account? Sign Up</button>
                 </div>
             </form>
         </div>
@@ -945,6 +956,7 @@
 
         function openDonorLoginModal() {
             document.getElementById('donorLoginEmail').value = '';
+            document.getElementById('donorLoginPassword').value = '';
             document.getElementById('donorLoginModal').classList.remove('hidden');
         }
 
@@ -955,38 +967,42 @@
         async function handleDonorLoginSubmit(event) {
             event.preventDefault();
             const email = document.getElementById('donorLoginEmail').value.trim();
-            if (!email || !email.includes('@')) {
-                showAlert('Please enter a valid email address.', 'error');
-                return;
-            }
-
-            if (!isLiveApi) {
-                // Offline mode fake OTP
-                pendingLoginEmail = email;
-                closeDonorLoginModal();
-                openOtpModal(email);
-                showAlert('Offline Mode: Your Mock OTP is 1234', 'success');
+            const password = document.getElementById('donorLoginPassword').value;
+            
+            if (!email || !password) {
+                showAlert('Please enter both email and password.', 'error');
                 return;
             }
 
             try {
-                // Send Email OTP via backend API
-                const response = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, {
-                    method: 'POST'
+                const response = await fetch(`${API_BASE_URL}/donors/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
                 });
                 
                 if (response.ok) {
-                    pendingLoginEmail = email;
+                    const donor = await response.json();
                     closeDonorLoginModal();
-                    openOtpModal(email);
-                    showAlert('Verification OTP sent to your email successfully!', 'success');
+                    sessionStorage.setItem('donor_verified_email', email);
+                    
+                    // Pre-fill and lock the email input on the registration form
+                    const emailInput = document.getElementById('donorEmail');
+                    if (emailInput) {
+                        emailInput.value = email;
+                        emailInput.readOnly = true;
+                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    
+                    switchTab('register');
+                    checkExistingDonorAndSetupForm(email);
+                    showAlert('Logged in successfully!', 'success');
                 } else {
-                    const data = await response.json();
-                    showAlert(data.message || 'Failed to send OTP. Please try again.', 'error');
+                    showAlert('Invalid email or password.', 'error');
                 }
-            } catch (err) {
-                console.error('Error sending OTP:', err);
-                showAlert('Failed to connect to backend server for sending OTP.', 'error');
+            } catch (error) {
+                console.error('Error during login:', error);
+                showAlert('Failed to connect to backend server.', 'error');
             }
         }
 
@@ -1150,11 +1166,11 @@
             
             const latVal = document.getElementById('donorLat').value;
             const lngVal = document.getElementById('donorLng').value;
-            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
+            const email = document.getElementById('donorEmail').value.trim();
+            const password = document.getElementById('donorPassword').value;
 
-            if (!verifiedEmail) {
-                showAlert('Access Denied: Please log in with your email first.', 'warning');
-                openDonorLoginModal();
+            if (!email || !password) {
+                showAlert('Please provide both email and password.', 'error');
                 return;
             }
 
@@ -1164,7 +1180,8 @@
                 city: document.getElementById('donorDistrict').value,
                 area: document.getElementById('donorArea').value,
                 phone: document.getElementById('donorPhone').value,
-                email: verifiedEmail,
+                email: email,
+                password: password,
                 lastDonation: document.getElementById('donorLastDonation').value || null,
                 availability: document.getElementById('donorAvailability').checked,
                 bio: document.getElementById('donorBio').value,
@@ -1213,12 +1230,7 @@
                 }
             }
             if (tabId === 'register') {
-                const isDonorVerified = sessionStorage.getItem('donor_verified_email');
-                if (!isDonorVerified) {
-                    showAlert('Access Restricted: Please log in with your email address to register.', 'warning');
-                    openDonorLoginModal();
-                    return;
-                }
+                // Anyone can access the registration tab now
             }
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
