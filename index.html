@@ -50,6 +50,12 @@
             </div>
             
             <div style="display: flex; gap: 0.75rem; align-items: center;">
+                <button class="btn btn-primary btn-sm" onclick="switchTab('register')" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                    <i class="fa-solid fa-user-plus"></i> Sign Up
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="openDonorLoginModal()" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; border-color: var(--primary-color); color: var(--primary-color);">
+                    <i class="fa-solid fa-arrow-right-to-bracket"></i> Login
+                </button>
                 <div class="system-status" id="systemStatus">
                     <span class="status-indicator offline"></span>
                     <span class="system-status-badge status-text">Checking server...</span>
@@ -74,7 +80,7 @@
                     <i class="fa-solid fa-notes-medical"></i>
                     <span>Request Blood</span>
                 </button>
-                <button class="nav-btn" data-tab="donors">
+                <button class="nav-btn" data-tab="donors" id="navAdminDonors" style="display: none;">
                     <i class="fa-solid fa-users"></i>
                     <span>Donors List</span>
                 </button>
@@ -82,13 +88,19 @@
                     <i class="fa-solid fa-hand-holding-heart"></i>
                     <span>Blood Requests</span>
                 </button>
-                <button class="nav-btn" data-tab="match">
+                <button class="nav-btn" data-tab="match" id="navAdminMatch" style="display: none;">
                     <i class="fa-solid fa-circle-nodes"></i>
                     <span>Match Donors</span>
                 </button>
                 <button class="nav-btn" data-tab="compatibility">
                     <i class="fa-solid fa-circle-info"></i>
                     <span>Compatibility</span>
+                </button>
+                
+                <div style="flex-grow: 1;"></div>
+                <button class="nav-btn" onclick="openAdminAuthModal('home')" id="adminLoginBtn" style="margin-top: auto; color: var(--text-muted); opacity: 0.7;">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Admin Login</span>
                 </button>
             </nav>
         </aside>
@@ -109,10 +121,7 @@
                         <p class="hero-subtitle">Find blood donors near you in Tamil Nadu instantly. Register as a donor today to save lives, or raise a direct request for emergency cases.</p>
                         <div class="hero-actions">
                             <button class="btn btn-primary btn-lg" onclick="switchTab('register')">
-                                <i class="fa-solid fa-heart-pulse"></i> Sign Up
-                            </button>
-                            <button class="btn btn-secondary btn-lg" onclick="openDonorLoginModal()" style="border-color: var(--primary-color); color: var(--primary-color);">
-                                <i class="fa-solid fa-user"></i> Login
+                                <i class="fa-solid fa-heart-pulse"></i> Register as Donor
                             </button>
                             <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
                                 <i class="fa-solid fa-truck-medical"></i> Request Blood
@@ -168,9 +177,9 @@
                     <div class="notice-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
                     <div class="notice-body">
                         <h4>Need Blood Urgently?</h4>
-                        <p>Go to the Match Donors tab directly, enter the recipient's details, and find matched donors sorted by proximity instantly.</p>
+                        <p>Go to the Request Blood tab to raise an emergency request for donors in your area.</p>
                     </div>
-                    <button class="btn btn-danger" onclick="switchTab('match')">Find Match Now</button>
+                    <button class="btn btn-danger" onclick="switchTab('request')">Request Blood Now</button>
                 </div>
             </section>
 
@@ -937,6 +946,17 @@
             setupToggleListeners();
             initializeMockData();
             checkApiConnection();
+            
+            // Check Admin Status on Load
+            if (sessionStorage.getItem('admin_verified') === 'true') {
+                const donorsTab = document.getElementById('navAdminDonors');
+                const matchTab = document.getElementById('navAdminMatch');
+                const adminLoginBtn = document.getElementById('adminLoginBtn');
+                
+                if(donorsTab) donorsTab.style.display = 'flex';
+                if(matchTab) matchTab.style.display = 'flex';
+                if(adminLoginBtn) adminLoginBtn.style.display = 'none';
+            }
         });
 
         // Setup sidebar tabs
@@ -997,6 +1017,10 @@
                     switchTab('register');
                     checkExistingDonorAndSetupForm(email);
                     showAlert('Logged in successfully!', 'success');
+                } else if (response.status === 404) {
+                    closeDonorLoginModal();
+                    switchTab('register');
+                    showAlert('Please sign up first.', 'warning');
                 } else {
                     showAlert('Invalid email or password.', 'error');
                 }
@@ -1214,7 +1238,15 @@
                 sessionStorage.setItem('admin_verified', 'true');
                 document.getElementById('adminAuthModal').classList.add('hidden');
                 showAlert('Admin verification successful!', 'success');
-                switchTab(pendingTargetTab);
+                
+                // Reveal Admin Tabs
+                document.getElementById('navAdminDonors').style.display = 'flex';
+                document.getElementById('navAdminMatch').style.display = 'flex';
+                document.getElementById('adminLoginBtn').style.display = 'none';
+
+                if (pendingTargetTab) {
+                    switchTab(pendingTargetTab);
+                }
             } else {
                 document.getElementById('adminAuthModal').classList.add('hidden');
                 showAlert('Only Admin can access', 'error');
