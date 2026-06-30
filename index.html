@@ -40,6 +40,8 @@
             color: white !important;
         }
     </style>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <header class="app-header">
@@ -786,7 +788,7 @@
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
                     </div>
                     
-                    <button type="button" class="btn btn-outline" onclick="mockGoogleAuth('signup')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <button type="button" class="btn btn-outline" onclick="triggerGoogleAuth('signup')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
                         Continue with Google
                     </button>
@@ -821,7 +823,7 @@
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
                     </div>
                     
-                    <button type="button" class="btn btn-outline" onclick="mockGoogleAuth('login')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <button type="button" class="btn btn-outline" onclick="triggerGoogleAuth('login')" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center; background: white; color: #444; border: none; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px; margin-right: 8px;">
                         Continue with Google
                     </button>
@@ -832,50 +834,7 @@
         </div>
     </div>
 
-    <!-- Google Auth Mock Modal -->
-    <style>
-        .google-account-item:hover { background-color: #f1f3f4 !important; }
-    </style>
-    <div id="googleAuthModal" class="modal hidden" style="z-index: 2000; background: rgba(0,0,0,0.5);">
-        <div class="modal-content" style="max-width: 400px; background: white; color: #202124; border-radius: 8px; padding: 0; overflow: hidden; border: 1px solid #dadce0;">
-            <div style="padding: 24px 24px 0 24px; text-align: center;">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/2/2f/Google_2015_logo.svg" alt="Google" style="height: 24px; margin-bottom: 16px;">
-                <h2 style="font-family: 'Google Sans', arial, sans-serif; font-size: 1.5rem; font-weight: 400; margin-bottom: 8px;">Sign in</h2>
-                <p style="font-size: 1rem; margin-bottom: 32px;">to continue to BloodLink</p>
-            </div>
-            
-            <div style="padding: 0;">
-                <!-- Account 1 -->
-                <div class="google-account-item" onclick="selectGoogleAccount('johndoe@gmail.com')" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #1a73e8; color: white; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 1rem; margin-right: 12px;">J</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 500; font-size: 0.9rem; margin-bottom: 2px;">John Doe</div>
-                        <div style="font-size: 0.8rem; color: #5f6368;">johndoe@gmail.com</div>
-                    </div>
-                </div>
-                <!-- Account 2 -->
-                <div class="google-account-item" onclick="selectGoogleAccount('sarahsmith@gmail.com')" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
-                    <div style="width: 32px; height: 32px; border-radius: 50%; background: #d93025; color: white; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 1rem; margin-right: 12px;">S</div>
-                    <div style="flex: 1;">
-                        <div style="font-weight: 500; font-size: 0.9rem; margin-bottom: 2px;">Sarah Smith</div>
-                        <div style="font-size: 0.8rem; color: #5f6368;">sarahsmith@gmail.com</div>
-                    </div>
-                </div>
-                <!-- Use another account -->
-                <div class="google-account-item" onclick="closeGoogleAuthModal()" style="display: flex; align-items: center; padding: 12px 24px; cursor: pointer; transition: background 0.2s;">
-                    <div style="width: 32px; height: 32px; margin-right: 12px; display: flex; align-items: center; justify-content: center; color: #5f6368;">
-                        <i class="fa-solid fa-user-circle" style="font-size: 1.2rem;"></i>
-                    </div>
-                    <div style="font-weight: 500; font-size: 0.9rem; color: #3c4043;">Use another account</div>
-                </div>
-            </div>
-            
-            <div style="padding: 24px; display: flex; justify-content: space-between; align-items: center; margin-top: 16px;">
-                <span style="font-size: 0.85rem; color: #1a73e8; cursor: pointer;">English (United States)</span>
-                <span style="font-size: 0.85rem; color: #5f6368;">Help &nbsp;&nbsp; Privacy &nbsp;&nbsp; Terms</span>
-            </div>
-        </div>
-    </div>
+
 
     <!-- Admin Authentication Modal -->
     <div id="adminAuthModal" class="modal hidden">
@@ -2490,28 +2449,65 @@
         // Mock Google Authentication
         let pendingGoogleAuthType = '';
 
-        function mockGoogleAuth(type) {
-            pendingGoogleAuthType = type;
-            document.getElementById('donorSignUpModal').classList.add('hidden');
-            document.getElementById('donorLoginModal').classList.add('hidden');
-            document.getElementById('googleAuthModal').classList.remove('hidden');
-        }
+        // Initialize Google Identity Services
+        window.addEventListener('load', () => {
+            if (window.google && google.accounts) {
+                // To make this fully functional, replace this placeholder with a valid Google Client ID 
+                // created in the Google Cloud Console for this domain.
+                const clientId = "YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com";
+                
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleCredentialResponse,
+                    cancel_on_tap_outside: false
+                });
+            }
+        });
 
-        function selectGoogleAccount(email) {
-            closeGoogleAuthModal();
-            if (pendingGoogleAuthType === 'signup') {
-                document.getElementById('donorSignUpEmail').value = email;
-                document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
-                handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
-            } else {
-                document.getElementById('donorLoginEmail').value = email;
-                document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
-                handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
+        function handleCredentialResponse(response) {
+            try {
+                const responsePayload = decodeJwtResponse(response.credential);
+                const email = responsePayload.email;
+                
+                if (pendingGoogleAuthType === 'signup') {
+                    document.getElementById('donorSignUpEmail').value = email;
+                    document.getElementById('donorSignUpPassword').value = 'GoogleAuth123';
+                    handleDonorSignUpSubmit(new Event('submit', { cancelable: true }));
+                } else {
+                    document.getElementById('donorLoginEmail').value = email;
+                    document.getElementById('donorLoginPassword').value = 'GoogleAuth123';
+                    handleDonorLoginSubmit(new Event('submit', { cancelable: true }));
+                }
+            } catch (error) {
+                console.error("Error decoding JWT or logging in:", error);
+                showAlert("Google Sign-In failed.", "error");
             }
         }
 
-        function closeGoogleAuthModal() {
-            document.getElementById('googleAuthModal').classList.add('hidden');
+        function decodeJwtResponse(token) {
+            let base64Url = token.split('.')[1];
+            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+        function triggerGoogleAuth(type) {
+            pendingGoogleAuthType = type;
+            document.getElementById('donorSignUpModal').classList.add('hidden');
+            document.getElementById('donorLoginModal').classList.add('hidden');
+            
+            if (window.google && google.accounts) {
+                google.accounts.id.prompt((notification) => {
+                    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+                        console.warn("Google One Tap not displayed:", notification.getNotDisplayedReason());
+                        showAlert('Google Sign-In is blocked or Client ID is missing/invalid.', 'warning');
+                    }
+                });
+            } else {
+                showAlert('Google Sign-In script failed to load.', 'error');
+            }
         }
     </script>
 </body>
