@@ -1087,14 +1087,8 @@
             if (isVerified) {
                 switchTab('register');
             } else {
-                const hasRegistered = localStorage.getItem('has_registered');
-                if (hasRegistered === 'true') {
-                    showAlert('Please login first to update your profile.', 'warning');
-                    openDonorLoginModal();
-                } else {
-                    showAlert('Please sign up first to register as a donor.', 'info');
-                    openDonorSignUpModal();
-                }
+                showAlert('Please login to manage your donor profile.', 'info');
+                openDonorLoginModal();
             }
         }
 
