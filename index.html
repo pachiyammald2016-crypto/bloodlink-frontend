@@ -2539,24 +2539,58 @@
                 document.getElementById('donorSignUpModal').classList.add('hidden');
                 document.getElementById('donorLoginModal').classList.add('hidden');
                 
-                pendingLoginEmail = email; // Save for OTP verification
-                
-                // Force OTP Verification even for Google Sign-In as per admin request
+                // Check if user already exists
+                let userExists = false;
                 if (isLiveApi) {
                     try {
-                        const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
-                        if (otpRes.ok) {
-                            openOtpModal(email);
-                            showAlert('OTP sent to your email! Please check your inbox.', 'success');
-                        } else {
-                            showAlert('Failed to send OTP. Please try again.', 'error');
+                        const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                        if (checkRes.ok) {
+                            userExists = true;
                         }
-                    } catch (err) {
-                        showAlert('Failed to connect to backend server for OTP.', 'error');
+                    } catch(e) {
+                        console.error('API check failed', e);
                     }
+                }
+                
+                if (!userExists) {
+                    const localExists = mockDonors.find(d => d.email === email);
+                    if (localExists) {
+                        userExists = true;
+                    }
+                }
+                
+                if (userExists) {
+                    // Existing User: Login directly without OTP!
+                    localStorage.setItem('donor_verified_email', email);
+                    localStorage.setItem('has_registered', 'true');
+                    
+                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
+                    sessionStorage.removeItem('post_auth_tab');
+                    switchTab(targetTab);
+                    
+                    checkExistingDonorAndSetupForm(email);
+                    showAlert('Logged in successfully via Google!', 'success');
+                    updateAuthUI();
                 } else {
-                    openOtpModal(email);
-                    showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
+                    // New User: Require OTP verification
+                    pendingLoginEmail = email; // Save for OTP verification
+                    
+                    if (isLiveApi) {
+                        try {
+                            const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
+                            if (otpRes.ok) {
+                                openOtpModal(email);
+                                showAlert('OTP sent to your email! Please verify to sign up.', 'success');
+                            } else {
+                                showAlert('Failed to send OTP. Please try again.', 'error');
+                            }
+                        } catch (err) {
+                            showAlert('Failed to connect to backend server for OTP.', 'error');
+                        }
+                    } else {
+                        openOtpModal(email);
+                        showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
+                    }
                 }
             } catch (error) {
                 console.error("Error decoding JWT or logging in:", error);
