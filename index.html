@@ -72,10 +72,7 @@
                     <i class="fa-solid fa-house"></i>
                     <span>Home</span>
                 </button>
-                <button class="nav-btn" data-tab="register">
-                    <i class="fa-solid fa-user-plus"></i>
-                    <span>Register Donor</span>
-                </button>
+
                 <button class="nav-btn" data-tab="request">
                     <i class="fa-solid fa-notes-medical"></i>
                     <span>Request Blood</span>
@@ -1072,7 +1069,7 @@
         }
 
         function requireAuthAndNavigate(targetTab) {
-            const isVerified = sessionStorage.getItem('donor_verified_email');
+            const isVerified = localStorage.getItem('donor_verified_email');
             if (isVerified) {
                 if (targetTab === 'register') {
                     const hasRegistered = localStorage.getItem('has_registered');
@@ -1271,7 +1268,7 @@
             if (!isLiveApi) {
                 if (code === '123456') {
                     closeOtpModal();
-                    sessionStorage.setItem('donor_verified_email', pendingLoginEmail);
+                    localStorage.setItem('donor_verified_email', pendingLoginEmail);
                     
                     // Pre-fill and lock the email input on the registration form
                     const emailInput = document.getElementById('donorEmail');
@@ -1298,7 +1295,7 @@
 
                 if (response.ok) {
                     closeOtpModal();
-                    sessionStorage.setItem('donor_verified_email', pendingLoginEmail);
+                    localStorage.setItem('donor_verified_email', pendingLoginEmail);
                     
                     // Pre-fill and lock the email input on the registration form
                     const emailInput = document.getElementById('donorEmail');
@@ -1967,7 +1964,7 @@
                 }
             }
 
-            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
+            const verifiedEmail = localStorage.getItem('donor_verified_email');
             
             if (!success) {
                 if (verifiedEmail) {
@@ -2003,7 +2000,7 @@
             }, 1500);
             
             const emailInput = document.getElementById('donorEmail');
-            if (emailInput && !sessionStorage.getItem('donor_verified_email')) {
+            if (emailInput && !localStorage.getItem('donor_verified_email')) {
                 emailInput.readOnly = false;
             }
             document.getElementById('locationStatus').textContent = 'Not shared (uses district center)';
@@ -2580,7 +2577,7 @@
     </script>
     <script>
         function updateAuthUI() {
-            const verifiedEmail = sessionStorage.getItem('donor_verified_email');
+            const verifiedEmail = localStorage.getItem('donor_verified_email');
             if (verifiedEmail) {
                 const headerActions = document.querySelector('.header-actions');
                 if (headerActions) {
@@ -2611,7 +2608,7 @@
 
         function logoutDonor() {
             sessionStorage.removeItem('donor_id');
-            sessionStorage.removeItem('donor_verified_email');
+            localStorage.removeItem('donor_verified_email');
             const emailInput = document.getElementById('donorEmail');
             if (emailInput) {
                 emailInput.value = '';
