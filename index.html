@@ -1926,6 +1926,7 @@
             handleDistrictChange('matchDistrict', 'matchAreaList');
             document.getElementById('matchArea').value = area || '';
             
+            sessionStorage.setItem('active_blood_request', 'true');
             switchTab('match');
             
             const mockEvent = { preventDefault: () => {} };
