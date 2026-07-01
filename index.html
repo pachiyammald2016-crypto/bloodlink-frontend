@@ -769,9 +769,13 @@
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-plus text-primary"></i> Create Account</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up to create a donor profile.</p>
             <form onsubmit="handleDonorSignUpSubmit(event)">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="donorSignUpEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
                     <input type="email" id="donorSignUpEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="donorSignUpPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
+                    <input type="password" id="donorSignUpPassword" required placeholder="Create a password" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Sign Up</button>
@@ -801,6 +805,10 @@
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label for="donorLoginEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
                     <input type="email" id="donorLoginEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="donorLoginPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
+                    <input type="password" id="donorLoginPassword" required placeholder="Enter your password" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
                     <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Login</button>
@@ -1024,9 +1032,14 @@
         async function handleDonorSignUpSubmit(event) {
             event.preventDefault();
             const email = document.getElementById('donorSignUpEmail').value.trim();
+            const password = document.getElementById('donorSignUpPassword').value;
             
             if (!email) {
                 showAlert('Please enter an email.', 'error');
+                return;
+            }
+            if (!password) {
+                showAlert('Please enter a password.', 'error');
                 return;
             }
 
@@ -1041,6 +1054,7 @@
                 } else if (response.status === 404) {
                     // Email does not exist. Safe to register.
                     localStorage.setItem('donor_verified_email', email);
+                    sessionStorage.setItem('pending_signup_password', password);
                     closeDonorSignUpModal();
                     
                     const emailInput = document.getElementById('donorEmail');
@@ -1090,29 +1104,43 @@
         async function handleDonorLoginSubmit(event) {
             event.preventDefault();
             const email = document.getElementById('donorLoginEmail').value.trim();
+            const password = document.getElementById('donorLoginPassword').value;
             
-            if (!email) {
-                showAlert('Please enter your email.', 'error');
+            if (!email || !password) {
+                showAlert('Please enter both email and password.', 'error');
                 return;
             }
 
             try {
                 let userExists = false;
+                let loginSuccess = false;
                 if (isLiveApi) {
-                    const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
-                    if (checkRes.ok) {
+                    const loginRes = await fetch(`${API_BASE_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, password: password })
+                    });
+                    
+                    if (loginRes.ok) {
+                        loginSuccess = true;
                         userExists = true;
+                    } else if (loginRes.status === 404) {
+                        userExists = false;
+                    } else {
+                        userExists = true;
+                        loginSuccess = false;
                     }
                 }
                 
-                if (!userExists) {
+                if (!isLiveApi) {
                     const localExists = (mockDonors || []).find(d => d.email === email);
                     if (localExists) {
                         userExists = true;
+                        loginSuccess = true;
                     }
                 }
 
-                if (userExists) {
+                if (loginSuccess) {
                     localStorage.setItem('donor_verified_email', email);
                     localStorage.setItem('has_registered', 'true');
                     closeDonorLoginModal();
@@ -1124,6 +1152,8 @@
                     if (targetTab === 'register') {
                         checkExistingDonorAndSetupForm(email);
                     }
+                } else if (userExists && !loginSuccess) {
+                    showAlert('Invalid email or password.', 'error');
                 } else {
                     showAlert('Account not found. Please sign up first.', 'warning');
                     closeDonorLoginModal();
@@ -1264,6 +1294,7 @@
                 area: document.getElementById('donorArea').value,
                 phone: document.getElementById('donorPhone').value,
                 email: email,
+                password: sessionStorage.getItem('pending_signup_password') || null,
                 lastDonation: document.getElementById('donorLastDonation').value || null,
                 availability: document.getElementById('donorAvailability').checked,
                 bio: document.getElementById('donorBio').value,
@@ -1891,6 +1922,7 @@
                             area: donor.area,
                             phone: donor.phone,
                             email: donor.email,
+                            password: donor.password,
                             lastDonation: donor.lastDonation,
                             last_donation: donor.lastDonation,
                             availability: donor.availability,
