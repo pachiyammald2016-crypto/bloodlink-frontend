@@ -1539,6 +1539,23 @@
                         <i class="fa-solid fa-map-location"></i> View on Google Maps
                     </a>
                 `;
+                
+                // Show on Leaflet Map
+                if (typeof L !== 'undefined' && leafletMap) {
+                    leafletMap.setView([donor.latitude, donor.longitude], 15);
+                    const searchedIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style='background-color:#ff4d5a; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px rgba(255,77,90,0.9); animation: pulse 1.5s infinite;'></div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    const marker = L.marker([donor.latitude, donor.longitude], {icon: searchedIcon}).addTo(leafletMap);
+                    marker.bindPopup(`<b style="color:var(--accent-red); font-size:1.1rem;">${donor.name} (${donor.bloodGroup || donor.blood_group})</b><br>${donor.phone}<br>${donor.area || ''}, ${donor.city}`).openPopup();
+                    mapMarkers.push(marker);
+                    setTimeout(() => {
+                        document.getElementById('liveMap').scrollIntoView({behavior: 'smooth', block: 'center'});
+                    }, 100);
+                }
             } else {
                 const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(donor.area + ', ' + donor.city + ', Tamil Nadu')}`;
                 locationHtml = `
@@ -1548,6 +1565,15 @@
                         <i class="fa-solid fa-map-location"></i> View District on Google Maps
                     </a>
                 `;
+                
+                // Fallback: zoom to district if possible
+                if (typeof L !== 'undefined' && leafletMap && TAMIL_NADU_DISTRICTS[donor.city]) {
+                    const dCoords = TAMIL_NADU_DISTRICTS[donor.city];
+                    leafletMap.setView([dCoords.lat, dCoords.lng], 10);
+                    setTimeout(() => {
+                        document.getElementById('liveMap').scrollIntoView({behavior: 'smooth', block: 'center'});
+                    }, 100);
+                }
             }
 
             resultDiv.innerHTML = `
