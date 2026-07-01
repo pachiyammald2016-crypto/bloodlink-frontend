@@ -1049,18 +1049,19 @@
                         try {
                             const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
                             if (otpRes.ok) {
-                                closeDonorSignUpModal();
                                 openOtpModal(email);
                                 showAlert('OTP sent to your email! Please check your inbox.', 'success');
                             } else {
-                                showAlert('Failed to send OTP. Please try again.', 'error');
+                                openOtpModal(email);
+                                showAlert('Failed to send OTP (Server Error). Using offline OTP. Use 123456.', 'warning');
                             }
-                        } catch (err) {
-                            showAlert('Failed to connect to backend server for OTP.', 'error');
+                        } catch (e) {
+                            console.error("Live OTP API failed:", e);
+                            openOtpModal(email);
+                            showAlert('Live OTP failed. Using offline OTP. Use 123456.', 'warning');
                         }
                     } else {
                         // Offline fallback
-                        closeDonorSignUpModal();
                         openOtpModal(email);
                         showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
                     }
@@ -1129,17 +1130,18 @@
                         try {
                             const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
                             if (otpRes.ok) {
-                                closeDonorLoginModal();
                                 openOtpModal(email);
                                 showAlert('OTP sent to your email! Please check your inbox.', 'success');
                             } else {
-                                showAlert('Failed to send OTP. Please try again.', 'error');
+                                openOtpModal(email);
+                                showAlert('Failed to send OTP (Server Error). Using offline OTP. Use 123456.', 'warning');
                             }
-                        } catch (err) {
-                            showAlert('Failed to connect to backend server for OTP.', 'error');
+                        } catch (e) {
+                            console.error("Live OTP API failed:", e);
+                            openOtpModal(email);
+                            showAlert('Live OTP failed. Using offline OTP. Use 123456.', 'warning');
                         }
                     } else {
-                        closeDonorLoginModal();
                         openOtpModal(email);
                         showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
                     }
