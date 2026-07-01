@@ -1084,6 +1084,7 @@
                     if (hasRegistered === 'true') {
                         showAlert('You are already registered! You can update your profile here.', 'info');
                     }
+                    checkExistingDonorAndSetupForm(isVerified);
                 }
                 switchTab(targetTab);
             } else {
@@ -1168,17 +1169,23 @@
 
         async function checkExistingDonorAndSetupForm(email) {
             try {
-                const response = await fetch(`${API_BASE_URL}/donors`);
-                if (response.ok) {
-                    const donors = await response.json();
-                    const existing = donors.find(d => d.email === email);
+                let existing = null;
+                if (isLiveApi) {
+                    const response = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                    if (response.ok) {
+                        existing = await response.json();
+                    }
+                } else {
+                    existing = (mockDonors || []).find(d => d.email === email);
+                }
+
+                if (existing) {
                     const formTitle = document.querySelector('#registerTab .form-header h2');
                     const formDesc = document.querySelector('#registerTab .form-header p');
                     const submitBtn = document.querySelector('#registerTab button[type="submit"]');
                     const banner = document.getElementById('updateProfileBanner');
                     
-                    if (existing) {
-                        sessionStorage.setItem('donor_id', existing.id);
+                    sessionStorage.setItem('donor_id', existing.id);
                         
                         // Pre-fill form values
                         document.getElementById('donorName').value = existing.name || '';
@@ -1907,6 +1914,7 @@
             if (!pendingDonorData) return;
             const donor = pendingDonorData;
             let success = false;
+            const isUpdatingProfile = sessionStorage.getItem('donor_id') !== null;
             
             if (isLiveApi) {
                 try {
