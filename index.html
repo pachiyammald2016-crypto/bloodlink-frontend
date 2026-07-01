@@ -1629,10 +1629,10 @@
 
         // Initialize Mock Data in LocalStorage (No default values)
         function initializeMockData() {
-            if (!localStorage.getItem('bloodlink_clean_db_v6')) {
+            if (!localStorage.getItem('bloodlink_clean_db_v7')) {
                 localStorage.clear();
                 sessionStorage.clear();
-                localStorage.setItem('bloodlink_clean_db_v6', 'true');
+                localStorage.setItem('bloodlink_clean_db_v7', 'true');
             }
 
             if (!localStorage.getItem('bloodlink_donors')) {
