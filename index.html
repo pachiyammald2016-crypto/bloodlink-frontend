@@ -120,7 +120,7 @@
                             <button class="btn btn-primary btn-lg" onclick="requireAuthAndNavigate('register')">
                                 <i class="fa-solid fa-heart-pulse"></i> Register as Donor
                             </button>
-                            <button class="btn btn-secondary btn-lg" onclick="requireAuthAndNavigate('request')">
+                            <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
                                 <i class="fa-solid fa-truck-medical"></i> Request Blood
                             </button>
                         </div>
@@ -997,7 +997,8 @@
             buttons.forEach(btn => {
                 btn.addEventListener('click', () => {
                     const tabId = btn.getAttribute('data-tab');
-                    if (tabId === 'register' || tabId === 'request') {
+                    // Only intercept Register Donor for authentication
+                    if (tabId === 'register') {
                         requireAuthAndNavigate(tabId);
                     } else {
                         switchTab(tabId);
