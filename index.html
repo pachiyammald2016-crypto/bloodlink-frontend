@@ -186,8 +186,11 @@
             <section id="registerTab" class="tab-content">
                 <div class="form-container glass-card">
                     <div class="form-header">
-                        <h2><i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor</h2>
-                        <p>Be someone's hero. Register your details to join the active donor pool in Tamil Nadu.</p>
+                        <h2 id="donorFormTitle"><i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor</h2>
+                        <p id="donorFormSubtitle">Be someone's hero. Register your details to join the active donor pool in Tamil Nadu.</p>
+                        <div id="updateProfileBanner" class="hidden" style="background: rgba(30, 144, 255, 0.1); border-left: 4px solid dodgerblue; padding: 1rem; border-radius: 4px; margin-top: 1rem; color: #fff;">
+                            <i class="fa-solid fa-circle-info" style="color: dodgerblue;"></i> You are an existing donor. You can update your profile details below.
+                        </div>
                     </div>
                     
                     <form id="donorForm" onsubmit="handleDonorRegistrationSubmit(event)">
@@ -1170,6 +1173,7 @@
                     const formTitle = document.querySelector('#registerTab .form-header h2');
                     const formDesc = document.querySelector('#registerTab .form-header p');
                     const submitBtn = document.querySelector('#registerTab button[type="submit"]');
+                    const banner = document.getElementById('updateProfileBanner');
                     
                     if (existing) {
                         sessionStorage.setItem('donor_id', existing.id);
@@ -1251,6 +1255,9 @@
                         if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor';
                         if (formDesc) formDesc.textContent = 'Be someone\'s hero. Register your details to join the active pool of donors in Tamil Nadu.';
                         if (submitBtn) submitBtn.textContent = 'Submit Registration';
+                        
+                        // Hide banner
+                        if (banner) banner.classList.add('hidden');
                     }
                 }
             } catch (err) {
@@ -1983,22 +1990,32 @@
                 }
                 localStorage.setItem('bloodlink_donors', JSON.stringify(mockDonors));
             }
-            showAlert('Success! Donor registration submitted successfully.', 'success');
+            if (isUpdatingProfile) {
+                showAlert('Success! Profile updated successfully.', 'success');
+                setTimeout(() => {
+                    switchTab('home');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 1500);
+            } else {
+                showAlert('Success! Donor registration submitted successfully.', 'success');
+                // Populate and show the ID Card
+                document.getElementById('cardName').textContent = donor.name;
+                document.getElementById('cardBloodGroup').textContent = donor.bloodGroup || donor.blood_group;
+                document.getElementById('cardLocation').textContent = donor.city + ' / ' + donor.area;
+                document.getElementById('cardId').textContent = 'BLD-' + (donor.id || Date.now()).toString().slice(-6);
+                
+                document.getElementById('donorCardModal').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    switchTab('home');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 500);
+            }
+
             localStorage.setItem('has_registered', 'true');
             document.getElementById('donorForm').reset();
             document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
             document.getElementById('donorAreaList').innerHTML = '';
-            
-            // Re-fetch existing donor data to keep form populated correctly in the background
-            if (verifiedEmail) {
-                checkExistingDonorAndSetupForm(verifiedEmail);
-            }
-            
-            // Switch back to Home after update
-            setTimeout(() => {
-                switchTab('home');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }, 1500);
             
             const emailInput = document.getElementById('donorEmail');
             if (emailInput && !localStorage.getItem('donor_verified_email')) {
@@ -2583,10 +2600,12 @@
                                 openOtpModal(email);
                                 showAlert('OTP sent to your email! Please verify to sign up.', 'success');
                             } else {
-                                showAlert('Failed to send OTP. Please try again.', 'error');
+                                openOtpModal(email);
+                                showAlert('Live OTP failed (Server Error). Using offline OTP for now. (Use 123456)', 'warning');
                             }
                         } catch (err) {
-                            showAlert('Failed to connect to backend server for OTP.', 'error');
+                            openOtpModal(email);
+                            showAlert('Failed to connect to backend server. Using offline OTP. (Use 123456)', 'warning');
                         }
                     } else {
                         openOtpModal(email);
@@ -2737,5 +2756,37 @@
             });
         }
     </script>
+    <!-- Donor ID Card Modal -->
+    <div id="donorCardModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 400px; padding: 0; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, var(--primary-color), #c92a2a); color: white; padding: 2rem; text-align: center; position: relative;">
+                <button type="button" class="close-btn" onclick="document.getElementById('donorCardModal').classList.add('hidden')" style="color: white; top: 1rem; right: 1rem;"><i class="fa-solid fa-times"></i></button>
+                <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <i class="fa-solid fa-droplet" style="color: var(--primary-color); font-size: 2.5rem;"></i>
+                </div>
+                <h2 style="margin: 0; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">BloodLink Donor</h2>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Thank you for registering!</p>
+            </div>
+            <div style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Name</span>
+                    <strong id="cardName" style="color: white;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Blood Group</span>
+                    <strong id="cardBloodGroup" style="color: var(--primary-color); font-size: 1.2rem;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Location</span>
+                    <strong id="cardLocation" style="color: white;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Donor ID</span>
+                    <strong id="cardId" style="color: white; font-family: monospace;">-</strong>
+                </div>
+                <button type="button" class="btn btn-primary" style="width: 100%;" onclick="document.getElementById('donorCardModal').classList.add('hidden')">Awesome!</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
