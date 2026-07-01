@@ -955,7 +955,7 @@
         ) {
             API_BASE_URL = `http://${window.location.hostname}:8080/api`;
         }
-        let isLiveApi = false;
+        let isLiveApi = true;
         let mockDonors = [];
         let mockRequests = [];
         let allLoadedDonors = [];
@@ -1863,9 +1863,16 @@
                     
                     if (response.ok) {
                         success = true;
+                        const savedDonor = await response.json();
+                        donor.id = savedDonor.id; // Get real ID from backend
+                    } else {
+                        const errorMsg = await response.text();
+                        console.error("Backend error:", errorMsg);
+                        showAlert("Registration Failed (Backend): " + errorMsg, "error");
+                        return; // Do not proceed to offline fallback if backend explicitly rejected it
                     }
                 } catch (e) {
-                    console.error("Live API registration failed, running local backup", e);
+                    console.error("Live API registration failed (Network Error), running local backup", e);
                 }
             }
 
@@ -2520,7 +2527,7 @@
             const formDesc = document.querySelector('#registerTab .form-header p');
             const submitBtn = document.querySelector('#registerTab button[type="submit"]');
             if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor';
-            if (formDesc) formDesc.textContent = 'Be someone\\'s hero. Register your details to join the active pool of donors in Tamil Nadu.';
+            if (formDesc) formDesc.textContent = 'Be someone\'s hero. Register your details to join the active pool of donors in Tamil Nadu.';
             if (submitBtn) submitBtn.textContent = 'Submit Registration';
             
             updateAuthUI();
