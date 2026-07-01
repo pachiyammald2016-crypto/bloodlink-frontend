@@ -1525,8 +1525,9 @@
                     throw new Error('Server returned error status');
                 }
             } catch (err) {
-                isLiveApi = false;
-                statusIndicator.innerHTML = '<span class="status-indicator offline"></span><span class="status-text">Offline Mode (Mock DB active)</span>';
+                // We keep isLiveApi = true to force the app to always ATTEMPT backend calls
+                // If it fails during a specific action, the catch block of that action will handle the fallback.
+                statusIndicator.innerHTML = '<span class="status-indicator offline"></span><span class="status-text">Backend Unreachable (Mock Data Fallback)</span>';
                 console.log('Backend connection failed. Operating in offline LocalStorage mode.', err);
             }
             loadStats();
