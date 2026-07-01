@@ -768,26 +768,16 @@
             <span class="close-modal" onclick="closeDonorSignUpModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-plus text-primary"></i> Create Account</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up to create a donor profile.</p>
-            <form onsubmit="handleDonorSignUpSubmit(event)">
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label for="donorSignUpEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
-                    <input type="email" id="donorSignUpEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
-                </div>
-                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Send OTP</button>
-                    
-                    <div style="display: flex; align-items: center; margin: 0.2rem 0;">
-                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
-                        <span style="padding: 0 10px; font-size: 0.8rem; color: var(--text-muted);">OR</span>
-                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
-                    </div>
-                    
-                    <!-- Official Google Sign-In Button Container -->
-                    <div id="googleSignInBtnSignup" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
-                    
-                    <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Already have an account? Login</button>
-                </div>
-            </form>
+            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; padding: 1rem 0;">
+                <!-- Official Google Sign-In Button Container -->
+                <div id="googleSignInBtnSignup" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
+                
+                <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
+                    (Google மூலம் உங்கள் Email-ஐ தேர்ந்தெடுத்தவுடன், உங்கள் Email-க்கு OTP வரும்)
+                </p>
+                
+                <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Already have an account? Login</button>
+            </div>
         </div>
     </div>
 
@@ -797,26 +787,12 @@
             <span class="close-modal" onclick="closeDonorLoginModal()">&times;</span>
             <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user text-primary"></i> Donor Login</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Log in with your email to access your donor profile.</p>
-            <form onsubmit="handleDonorLoginSubmit(event)">
-                <div class="form-group" style="margin-bottom: 1rem;">
-                    <label for="donorLoginEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
-                    <input type="email" id="donorLoginEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
-                </div>
-                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Send OTP</button>
-                    
-                    <div style="display: flex; align-items: center; margin: 0.2rem 0;">
-                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
-                        <span style="padding: 0 10px; font-size: 0.8rem; color: var(--text-muted);">OR</span>
-                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
-                    </div>
-                    
-                    <!-- Official Google Sign-In Button Container -->
-                    <div id="googleSignInBtnLogin" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
-                    
-                    <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">Don't have an account? Sign Up</button>
-                </div>
-            </form>
+            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; padding: 1rem 0;">
+                <!-- Official Google Sign-In Button Container -->
+                <div id="googleSignInBtnLogin" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
+                
+                <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 0.5rem;">New Donor? Sign Up</button>
+            </div>
         </div>
     </div>
 
@@ -1018,7 +994,8 @@
         let pendingLoginEmail = '';
 
         function openDonorSignUpModal() {
-            document.getElementById('donorSignUpEmail').value = '';
+            const el = document.getElementById('donorSignUpEmail');
+            if (el) el.value = '';
             document.getElementById('donorSignUpModal').classList.remove('hidden');
         }
 
@@ -1092,7 +1069,8 @@
         }
 
         function openDonorLoginModal() {
-            document.getElementById('donorLoginEmail').value = '';
+            const el = document.getElementById('donorLoginEmail');
+            if (el) el.value = '';
             document.getElementById('donorLoginModal').classList.remove('hidden');
         }
 
