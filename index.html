@@ -774,7 +774,7 @@
                     <input type="email" id="donorSignUpEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Send OTP to this Email</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-arrow-right"></i> Continue with Email</button>
                     
                     <div style="display: flex; align-items: center; margin: 0.2rem 0;">
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
@@ -782,16 +782,8 @@
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
                     </div>
                     
-                    <p style="text-align: center; font-size: 0.8rem; color: var(--accent-blue); margin-bottom: -0.3rem;">OTP is sent automatically when you select your Google account.</p>
                     <!-- Official Google Sign-In Button Container -->
                     <div id="googleSignInBtnSignup" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
-                </div>
-
-                <!-- Inline OTP Section -->
-                <div id="donorSignUpOtpSection" class="hidden" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; text-align: center;">Enter the 6-digit code sent to <br><strong id="donorSignUpOtpTargetEmail" style="color: white;"></strong></p>
-                    <input type="text" id="donorSignUpOtpInput" placeholder="123456" maxlength="6" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 1.2rem; letter-spacing: 4px; text-align: center; margin-bottom: 1rem;">
-                    <button type="button" onclick="handleInlineOtpSubmit('signup')" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-check-circle"></i> Verify & Login</button>
                 </div>
                 
                 <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 1rem;">Already have an account? Login</button>
@@ -811,7 +803,7 @@
                     <input type="email" id="donorLoginEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
                 </div>
                 <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
-                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Send OTP to this Email</button>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-arrow-right"></i> Continue with Email</button>
                     
                     <div style="display: flex; align-items: center; margin: 0.2rem 0;">
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
@@ -819,16 +811,8 @@
                         <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
                     </div>
                     
-                    <p style="text-align: center; font-size: 0.8rem; color: var(--accent-blue); margin-bottom: -0.3rem;">OTP is sent automatically when you select your Google account.</p>
                     <!-- Official Google Sign-In Button Container -->
                     <div id="googleSignInBtnLogin" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
-                </div>
-
-                <!-- Inline OTP Section -->
-                <div id="donorLoginOtpSection" class="hidden" style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem;">
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; text-align: center;">Enter the 6-digit code sent to <br><strong id="donorLoginOtpTargetEmail" style="color: white;"></strong></p>
-                    <input type="text" id="donorLoginOtpInput" placeholder="123456" maxlength="6" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 1.2rem; letter-spacing: 4px; text-align: center; margin-bottom: 1rem;">
-                    <button type="button" onclick="handleInlineOtpSubmit('login')" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-check-circle"></i> Verify & Login</button>
                 </div>
                 
                 <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 1rem;">New Donor? Sign Up</button>
@@ -1045,33 +1029,13 @@
                     openDonorLoginModal();
                 } else if (response.status === 404) {
                     // Email does not exist. Safe to register.
-                    pendingLoginEmail = email; // Save for OTP verification
-                    
-                    if (isLiveApi) {
-                        try {
-                            const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
-                            if (otpRes.ok) {
-                                openOtpModal(email);
-                                showAlert('OTP sent to your email! Please check your inbox.', 'success');
-                            } else {
-                                openOtpModal(email);
-                                showAlert('Failed to send OTP (Server Error). Using offline OTP. Use 123456.', 'warning');
-                            }
-                        } catch (e) {
-                            console.error("Live OTP API failed:", e);
-                            openOtpModal(email);
-                            showAlert('Live OTP failed. Using offline OTP. Use 123456.', 'warning');
-                        }
-                    } else {
-                        // Offline fallback
-                        openOtpModal(email);
-                        showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
-                    }
+                    pendingLoginEmail = email;
+                    finalizeInlineLogin('signup');
                 } else {
                     showAlert('An error occurred checking email availability.', 'error');
                 }
-            } catch (error) {
-                console.error('Error during sign up check:', error);
+            } catch (err) {
+                console.error('Error checking existing donor:', err);
                 showAlert('Failed to connect to backend server.', 'error');
             }
         }
@@ -1106,83 +1070,29 @@
             const email = document.getElementById('donorLoginEmail').value.trim();
             
             if (!email) {
-                showAlert('Please enter your email.', 'error');
+                showAlert('Please enter an email.', 'error');
                 return;
             }
 
             try {
-                let userExists = false;
-                if (isLiveApi) {
-                    const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
-                    if (checkRes.ok) {
-                        userExists = true;
-                    }
-                }
-                
-                if (!userExists) {
-                    const localExists = (mockDonors || []).find(d => d.email === email);
-                    if (localExists) {
-                        userExists = true;
-                    }
-                }
-
-                if (userExists) {
+                // Check if email exists
+                const response = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                if (response.ok) {
+                    // Email exists, proceed to login
                     pendingLoginEmail = email;
-                    if (isLiveApi) {
-                        try {
-                            const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
-                            if (otpRes.ok) {
-                                openOtpModal(email);
-                                showAlert('OTP sent to your email! Please check your inbox.', 'success');
-                            } else {
-                                openOtpModal(email);
-                                showAlert('Failed to send OTP (Server Error). Using offline OTP. Use 123456.', 'warning');
-                            }
-                        } catch (e) {
-                            console.error("Live OTP API failed:", e);
-                            openOtpModal(email);
-                            showAlert('Live OTP failed. Using offline OTP. Use 123456.', 'warning');
-                        }
-                    } else {
-                        openOtpModal(email);
-                        showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
-                    }
-                } else {
-                    showAlert('Account not found. Please sign up first.', 'warning');
+                    finalizeInlineLogin('login');
+                } else if (response.status === 404) {
+                    // Email does not exist
+                    showAlert('Email not found. Please sign up first.', 'error');
                     closeDonorLoginModal();
                     openDonorSignUpModal();
-                    document.getElementById('donorSignUpEmail').value = email;
+                } else {
+                    showAlert('An error occurred checking email.', 'error');
                 }
-            } catch (error) {
-                console.error('Error during login:', error);
+            } catch (err) {
+                console.error('Error checking existing donor:', err);
                 showAlert('Failed to connect to backend server.', 'error');
             }
-        }
-
-        function openOtpModal(email) {
-            const signupModal = document.getElementById('donorSignUpModal');
-            const loginModal = document.getElementById('donorLoginModal');
-            
-            if (!signupModal.classList.contains('hidden')) {
-                document.getElementById('donorSignUpForm').querySelector('.form-actions').classList.add('hidden');
-                document.getElementById('donorSignUpOtpSection').classList.remove('hidden');
-                document.getElementById('donorSignUpOtpTargetEmail').textContent = email;
-            } else if (!loginModal.classList.contains('hidden')) {
-                document.getElementById('donorLoginForm').querySelector('.form-actions').classList.add('hidden');
-                document.getElementById('donorLoginOtpSection').classList.remove('hidden');
-                document.getElementById('donorLoginOtpTargetEmail').textContent = email;
-            }
-        }
-
-        function closeOtpModal() {
-            // Reset inline sections
-            document.getElementById('donorSignUpForm').querySelector('.form-actions').classList.remove('hidden');
-            document.getElementById('donorSignUpOtpSection').classList.add('hidden');
-            document.getElementById('donorSignUpOtpInput').value = '';
-            
-            document.getElementById('donorLoginForm').querySelector('.form-actions').classList.remove('hidden');
-            document.getElementById('donorLoginOtpSection').classList.add('hidden');
-            document.getElementById('donorLoginOtpInput').value = '';
         }
 
         async function checkExistingDonorAndSetupForm(email) {
@@ -1287,45 +1197,10 @@
         }
 
         async function handleInlineOtpSubmit(type) {
-            const codeInput = document.getElementById(type === 'signup' ? 'donorSignUpOtpInput' : 'donorLoginOtpInput');
-            const code = codeInput.value.trim();
-            
-            if (code.length !== 6) {
-                showAlert('Please enter a valid 6-digit code.', 'error');
-                return;
-            }
-
-            if (!isLiveApi) {
-                if (code === '123456') {
-                    finalizeInlineLogin(type);
-                } else {
-                    showAlert('Invalid OTP. Please enter 123456 for Offline Mode.', 'error');
-                }
-                return;
-            }
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/otp/verify?email=${encodeURIComponent(pendingLoginEmail)}&code=${code}`, {
-                    method: 'POST'
-                });
-
-                if (response.ok) {
-                    finalizeInlineLogin(type);
-                } else {
-                    showAlert('Invalid Verification Code. Please check and try again.', 'error');
-                }
-            } catch (error) {
-                console.error("OTP verification error:", error);
-                if (code === '123456') {
-                    finalizeInlineLogin(type);
-                } else {
-                    showAlert('Error verifying code. If Live API is down, use 123456.', 'error');
-                }
-            }
+            finalizeInlineLogin(type);
         }
 
         function finalizeInlineLogin(type) {
-            closeOtpModal();
             if (type === 'signup') {
                 closeDonorSignUpModal();
             } else {
@@ -2579,61 +2454,9 @@
                 document.getElementById('donorSignUpModal').classList.add('hidden');
                 document.getElementById('donorLoginModal').classList.add('hidden');
                 
-                // Check if user already exists
-                let userExists = false;
-                if (isLiveApi) {
-                    try {
-                        const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
-                        if (checkRes.ok) {
-                            userExists = true;
-                        }
-                    } catch(e) {
-                        console.error('API check failed', e);
-                    }
-                }
-                
-                if (!userExists) {
-                    const localExists = (mockDonors || []).find(d => d.email === email);
-                    if (localExists) {
-                        userExists = true;
-                    }
-                }
-                
-                if (userExists) {
-                    // Existing User: Login directly without OTP!
-                    localStorage.setItem('donor_verified_email', email);
-                    localStorage.setItem('has_registered', 'true');
-                    
-                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
-                    sessionStorage.removeItem('post_auth_tab');
-                    switchTab(targetTab);
-                    
-                    checkExistingDonorAndSetupForm(email);
-                    showAlert('Logged in successfully via Google!', 'success');
-                    updateAuthUI();
-                } else {
-                    // New User: Require OTP verification
-                    pendingLoginEmail = email; // Save for OTP verification
-                    
-                    if (isLiveApi) {
-                        try {
-                            const otpRes = await fetch(`${API_BASE_URL}/otp/send?email=${encodeURIComponent(email)}`, { method: 'POST' });
-                            if (otpRes.ok) {
-                                openOtpModal(email);
-                                showAlert('OTP sent to your email! Please verify to sign up.', 'success');
-                            } else {
-                                openOtpModal(email);
-                                showAlert('Live OTP failed (Server Error). Using offline OTP for now. (Use 123456)', 'warning');
-                            }
-                        } catch (err) {
-                            openOtpModal(email);
-                            showAlert('Failed to connect to backend server. Using offline OTP. (Use 123456)', 'warning');
-                        }
-                    } else {
-                        openOtpModal(email);
-                        showAlert('OTP sent to your email! (Use 123456 for offline testing)', 'info');
-                    }
-                }
+                // Directly login or signup without OTP
+                pendingLoginEmail = email;
+                finalizeInlineLogin('signup');
             } catch (error) {
                 console.error("Error decoding JWT or logging in:", error);
                 showAlert("Google Sign-In failed: " + (error.message || error), "error");
