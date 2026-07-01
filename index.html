@@ -1113,7 +1113,7 @@
                 }
                 
                 if (!userExists) {
-                    const localExists = mockDonors.find(d => d.email === email);
+                    const localExists = (mockDonors || []).find(d => d.email === email);
                     if (localExists) {
                         userExists = true;
                     }
@@ -2554,7 +2554,7 @@
                 }
                 
                 if (!userExists) {
-                    const localExists = mockDonors.find(d => d.email === email);
+                    const localExists = (mockDonors || []).find(d => d.email === email);
                     if (localExists) {
                         userExists = true;
                     }
@@ -2595,7 +2595,7 @@
                 }
             } catch (error) {
                 console.error("Error decoding JWT or logging in:", error);
-                showAlert("Google Sign-In failed.", "error");
+                showAlert("Google Sign-In failed: " + (error.message || error), "error");
             }
         }
 
