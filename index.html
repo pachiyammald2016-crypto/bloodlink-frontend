@@ -849,10 +849,25 @@
         </div>
     </div>
 
-    <!-- Email OTP Verification Modal -->
-
-
-    <script>
+    <!-- Location Prompt Modal -->
+    <div id="locationPromptModal" class="modal hidden" style="z-index: 9999;">
+        <div class="modal-content glass-card" style="max-width: 400px; text-align: center; padding: 2.5rem 2rem;">
+            <span class="close-modal" onclick="closeLocationPromptModal()" style="top: 15px; right: 20px;">&times;</span>
+            <div style="font-size: 3.5rem; color: #ff4d5a; margin-bottom: 1.5rem;">
+                <i class="fa-solid fa-location-dot fa-bounce"></i>
+            </div>
+            <h3 style="margin-bottom: 1rem; color: var(--text-main);">Location Access Required</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.6;">
+                BloodLink works best when it can find nearby donors and hospitals. Please enable your location services for accurate matching.
+            </p>
+            <button class="btn btn-primary" onclick="requestLocationAccess()" style="width: 100%; padding: 0.8rem; font-size: 1rem;">
+                Enable Location
+            </button>
+            <button class="btn btn-outline" onclick="closeLocationPromptModal()" style="width: 100%; padding: 0.8rem; font-size: 1rem; margin-top: 1rem;">
+                Maybe Later
+            </button>
+        </div>
+    </div>    <script>
         // Tamil Nadu Districts with Approximate Coordinates
         const TAMIL_NADU_DISTRICTS = {
             "Ariyalur": { lat: 11.1401, lng: 79.0747 },
@@ -970,6 +985,8 @@
 
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(checkAndPromptLocation, 1000); // Check location access shortly after load
+            
             // Check for reset parameter to clear local storage
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('reset') === 'true') {
@@ -1096,6 +1113,46 @@
         function openDonorLoginModal() {
             document.getElementById('donorLoginEmail').value = '';
             document.getElementById('donorLoginModal').classList.remove('hidden');
+        }
+
+        // --- Location Prompt Functions ---
+        function closeLocationPromptModal() {
+            const m = document.getElementById('locationPromptModal');
+            if (m) m.classList.add('hidden');
+        }
+
+        function requestLocationAccess() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // Success!
+                        closeLocationPromptModal();
+                    },
+                    (error) => {
+                        // Denied or error
+                        showAlert('Location access was denied or unavailable. Some features may be limited.', 'warning');
+                        closeLocationPromptModal();
+                    }
+                );
+            }
+        }
+
+        function checkAndPromptLocation() {
+            if (sessionStorage.getItem('locationPromptShown') === 'true') return;
+            
+            if (navigator.permissions && navigator.geolocation) {
+                navigator.permissions.query({ name: 'geolocation' }).then(function(result) {
+                    if (result.state === 'prompt') {
+                        document.getElementById('locationPromptModal').classList.remove('hidden');
+                        sessionStorage.setItem('locationPromptShown', 'true');
+                    } else if (result.state === 'denied') {
+                        // Already denied
+                    }
+                });
+            } else if (navigator.geolocation) {
+                document.getElementById('locationPromptModal').classList.remove('hidden');
+                sessionStorage.setItem('locationPromptShown', 'true');
+            }
         }
 
         function closeDonorLoginModal() {
