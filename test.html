@@ -1,0 +1,2795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>BloodLink - Blood Donor Management System</title>
+    <!-- Google Fonts Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .reported-fake-badge {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #f87171;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .donor-card.reported-fake {
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.1) inset, 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+        }
+        .donor-card.reported-fake .donor-avatar {
+            border-color: #ef4444;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
+        }
+        .btn-danger:hover {
+            background: #ef4444 !important;
+            color: white !important;
+        }
+    </style>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+    <header class="app-header">
+        <div class="header-container">
+            <div class="logo">
+                <i class="fa-solid fa-droplet icon-droplet"></i>
+                <span class="logo-text">Blood<span>Link</span></span>
+            </div>
+            
+            <div class="header-actions">
+
+                <div class="system-status" id="systemStatus">
+                    <span class="status-indicator offline"></span>
+                    <span class="system-status-badge status-text">Checking server...</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav class="sidebar-nav">
+                <button class="nav-btn active" data-tab="home">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Home</span>
+                </button>
+
+                <button class="nav-btn" data-tab="request">
+                    <i class="fa-solid fa-notes-medical"></i>
+                    <span>Request Blood</span>
+                </button>
+                <button class="nav-btn" data-tab="donors" id="navAdminDonors" style="display: none;">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Donors List</span>
+                </button>
+                <button class="nav-btn" data-tab="requests-feed">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span>Blood Requests</span>
+                </button>
+                <button class="nav-btn" data-tab="match" id="navMatch">
+                    <i class="fa-solid fa-circle-nodes"></i>
+                    <span>Match Donors</span>
+                </button>
+                <button class="nav-btn" data-tab="compatibility">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Compatibility</span>
+                </button>
+                
+                <div style="flex-grow: 1;"></div>
+                <button class="nav-btn" onclick="openAdminAuthModal('home')" id="adminLoginBtn" style="margin-top: auto; color: var(--text-muted); opacity: 0.7;">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>Admin Login</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="content-area">
+            <!-- Alert Banner -->
+            <div id="alertBanner" class="alert-banner hidden">
+                <span id="alertMessage"></span>
+                <button class="close-alert" onclick="closeAlert()">&times;</button>
+            </div>
+
+            <!-- Home Tab -->
+            <section id="homeTab" class="tab-content active">
+                <div class="hero-section">
+                    <div class="hero-content">
+                        <h1>Connecting Lives, <br><span class="highlight">One Drop</span> at a Time</h1>
+                        <p class="hero-subtitle">Find blood donors near you in Tamil Nadu instantly. Register as a donor today to save lives, or raise a direct request for emergency cases.</p>
+                        <div class="hero-actions">
+                            <button class="btn btn-primary btn-lg" onclick="requireAuthAndNavigate('register')">
+                                <i class="fa-solid fa-heart-pulse"></i> Register as Donor
+                            </button>
+                            <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
+                                <i class="fa-solid fa-truck-medical"></i> Request Blood
+                            </button>
+                        </div>
+                    </div>
+                    <div class="hero-visual">
+                        <div class="blood-pulse-container">
+                            <div class="pulse-ring"></div>
+                            <div class="pulse-ring delay-1"></div>
+                            <div class="pulse-ring delay-2"></div>
+                            <div class="pulse-center">
+                                <i class="fa-solid fa-droplet"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Quick Stats -->
+                <div class="quick-stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                        <div class="stat-info">
+                            <h3 id="statDonorsCount">0</h3>
+                            <p>Active Donors</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-circle-exclamation text-critical"></i></div>
+                        <div class="stat-info">
+                            <h3 id="statRequestsCount">0</h3>
+                            <p>Active Requests</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
+                        <div class="stat-info">
+                            <h3>38</h3>
+                            <p>Districts Covered</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="stat-info">
+                            <h3>100%</h3>
+                            <p>Safe & Secure</p>
+                        </div>
+                    </div>
+                </div>
+
+
+
+                <!-- Emergency Banner -->
+                <div class="emergency-notice-panel">
+                    <div class="notice-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="notice-body">
+                        <h4>Need Blood Urgently?</h4>
+                        <p>Go to the Request Blood tab to raise an emergency request for donors in your area.</p>
+                    </div>
+                    <button class="btn btn-danger" onclick="switchTab('request')">Request Blood Now</button>
+                </div>
+            </section>
+
+            <!-- Register Donor Tab -->
+            <section id="registerTab" class="tab-content">
+                <div class="form-container glass-card">
+                    <div class="form-header">
+                        <h2 id="donorFormTitle"><i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor</h2>
+                        <p id="donorFormSubtitle">Be someone's hero. Register your details to join the active donor pool in Tamil Nadu.</p>
+                        <div id="updateProfileBanner" class="hidden" style="background: rgba(30, 144, 255, 0.1); border-left: 4px solid dodgerblue; padding: 1rem; border-radius: 4px; margin-top: 1rem; color: #fff;">
+                            <i class="fa-solid fa-circle-info" style="color: dodgerblue;"></i> You are an existing donor. You can update your profile details below.
+                        </div>
+                    </div>
+                    
+                    <form id="donorForm" onsubmit="handleDonorRegistrationSubmit(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="donorName">Full Name <span class="required">*</span></label>
+                                    <input type="text" id="donorName" required placeholder="e.g. Anbarasan K">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="donorBloodGroup">Blood Group <span class="required">*</span></label>
+                                    <select id="donorBloodGroup" required>
+                                        <option value="" disabled selected>Select blood group</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="donorDistrict">District (Tamil Nadu) <span class="required">*</span></label>
+                                    <select id="donorDistrict" required onchange="handleDistrictChange('donorDistrict', 'donorAreaList')">
+                                        <option value="" disabled selected>Select District</option>
+                                        <!-- Dynamic List -->
+                                    </select>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="donorArea">Area/City/Taluk <span class="required">*</span></label>
+                                    <input type="text" id="donorArea" list="donorAreaList" required placeholder="Type or select area...">
+                                    <datalist id="donorAreaList"></datalist>
+                                    <input type="hidden" id="donorLat">
+                                    <input type="hidden" id="donorLng">
+                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <button type="button" id="shareLocationBtn" class="btn btn-secondary btn-sm" onclick="getLiveLocation()" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; background: rgba(255,255,255,0.05); color: white; cursor: pointer;">
+                                            <i class="fa-solid fa-location-crosshairs text-primary"></i> Share Live Location
+                                        </button>
+                                        <span id="locationStatus" style="font-size: 0.8rem; color: var(--text-muted);">Not shared (uses district center)</span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="donorPhone">Contact Phone Number (10 digits) <span class="required">*</span></label>
+                                    <div class="input-phone-container">
+                                        <span class="phone-prefix">+91</span>
+                                        <input type="tel" id="donorPhone" pattern="[6-9][0-9]{9}" required placeholder="9876543210">
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="donorEmail">Email Address <span class="required">*</span></label>
+                                    <input type="email" id="donorEmail" placeholder="anbu@example.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="donorLastDonation">Last Blood Donation Date</label>
+                                    <input type="date" id="donorLastDonation">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="donorAvailability">Availability Status</label>
+                                    <div class="toggle-switch-container">
+                                        <label class="switch">
+                                            <input type="checkbox" id="donorAvailability" checked>
+                                            <span class="slider round"></span>
+                                        </label>
+                                        <span class="toggle-label" id="availabilityLabel">Available to Donate Now</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        <div class="form-group full-width">
+                            <label for="donorBio">Short Bio / Motivation / Medical Notes</label>
+                            <textarea id="donorBio" rows="3" placeholder="Write anything helpful (e.g. 'I can travel up to 20km', 'Fully vaccinated')"></textarea>
+                        </div>
+
+                        <div class="form-group full-width" style="margin-top: 1rem;">
+                            <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
+                                <i class="fa-solid fa-file-medical text-primary"></i> Mandatory Donor Health Screening
+                            </label>
+                            <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="healthTattoo" required style="margin-top: 0.2rem;">
+                                    <span>I have NOT had any tattoos, piercings, or acupuncture in the last 6 months. <span class="required">*</span></span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="healthAlcohol" required style="margin-top: 0.2rem;">
+                                    <span>I have NOT consumed alcohol in the last 24 hours. <span class="required">*</span></span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="healthDisease" required style="margin-top: 0.2rem;">
+                                    <span>I do NOT suffer from any major chronic diseases (such as HIV, Hepatitis, Heart disease, cancer). <span class="required">*</span></span>
+                                </label>
+                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                    <input type="checkbox" id="healthWeight" required style="margin-top: 0.2rem;">
+                                    <span>My weight is at least 45 kg and I feel healthy today. <span class="required">*</span></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                <input type="checkbox" id="donorDisclaimer" required style="margin-top: 0.2rem;">
+                                <span><strong>Disclaimer:</strong> I understand that this platform only connects donors with recipients. The final compatibility tests and health checks will be performed at the hospital before transfusion. <span class="required">*</span></span>
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="reset" class="btn btn-secondary">Reset Form</button>
+                            <button type="submit" class="btn btn-primary">Submit Registration</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Guidelines & Benefits (inside Register Donor Tab) -->
+                <div class="glass-card" style="margin-top: 2rem;">
+                    <h2><i class="fa-solid fa-book-medical text-primary"></i> Blood Donation Guidelines & Health Benefits</h2>
+                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Learn about why blood donation is important and what you should do before/after donating blood.</p>
+                    
+                    <div class="guidelines-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+                        <!-- Benefits Card -->
+                        <div class="glass-card" style="padding: 1.5rem; background: rgba(157, 78, 221, 0.05); border: 1px solid rgba(157, 78, 221, 0.15);">
+                            <h4 style="color: var(--accent-red); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-circle-chevron-up"></i> Health Benefits of Donating
+                            </h4>
+                            <ul style="list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-main);">
+                                <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                    <i class="fa-solid fa-circle-check" style="color: #4cd137; margin-top: 0.2rem;"></i>
+                                    <span><strong>Revitalizes Blood Cells:</strong> Donating blood stimulates the production of new red blood cells, keeping your cardiovascular system healthy.</span>
+                                </li>
+                                <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                    <i class="fa-solid fa-circle-check" style="color: #4cd137; margin-top: 0.2rem;"></i>
+                                    <span><strong>Free Health Checkup:</strong> Every time you donate, you get a mini-physical checkup including blood pressure, pulse, temperature, and hemoglobin levels.</span>
+                                </li>
+                                <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
+                                    <i class="fa-solid fa-circle-check" style="color: #4cd137; margin-top: 0.2rem;"></i>
+                                    <span><strong>Saves up to 3 Lives:</strong> A single blood donation can be split into its components (red cells, plasma, platelets) to save multiple patients.</span>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <!-- Dos & Don'ts Card -->
+                        <div class="glass-card" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);">
+                            <h4 style="color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-circle-info text-primary"></i> Pre-Donation Guidelines
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem;">
+                                <div>
+                                    <h5 style="color: #4cd137; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-up"></i> What to DO:</h5>
+                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
+                                        <li>Drink plenty of water (500ml) or non-alcoholic fluids before donating.</li>
+                                        <li>Eat a healthy, low-fat meal. Do not donate on an empty stomach.</li>
+                                        <li>Get a good night's sleep (7-8 hours) prior to donation.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 style="color: #ff4d5a; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-down"></i> What to AVOID:</h5>
+                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
+                                        <li>Do NOT consume alcohol within 24 hours prior to donation.</li>
+                                        <li>Avoid fatty foods like burgers or fries, as they can interfere with blood testing.</li>
+                                        <li>Do NOT smoke for at least 4 hours before your donation.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Post-Donation Guidelines -->
+                        <div class="glass-card" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);">
+                            <h4 style="color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <i class="fa-solid fa-circle-exclamation text-primary"></i> Post-Donation Guidelines
+                            </h4>
+                            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem;">
+                                <div>
+                                    <h5 style="color: #4cd137; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-up"></i> What to DO:</h5>
+                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
+                                        <li>Drink extra fluids throughout the day to replace lost volume.</li>
+                                        <li>Keep the strip bandage on for at least 4-6 hours.</li>
+                                        <li>Eat iron-rich foods (spinach, beans, raisins, poultry) after donation.</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h5 style="color: #ff4d5a; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-down"></i> What to AVOID:</h5>
+                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
+                                        <li>Do NOT lift heavy objects or do intense exercise for 24 hours.</li>
+                                        <li>Avoid standing for long periods or going into direct hot sun.</li>
+                                        <li>Do NOT consume alcohol for at least 24 hours post-donation.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Request Blood Tab -->
+            <section id="requestTab" class="tab-content">
+                <div class="form-container glass-card">
+                    <div class="form-header">
+                        <h2><i class="fa-solid fa-notes-medical text-primary"></i> Create Blood Request</h2>
+                        <p>Require blood urgently? Post a request detailing the requirements to notify matches immediately.</p>
+                    </div>
+                    
+                    <form id="requestForm" onsubmit="handleRequestSubmit(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="reqPatientName">Patient Name <span class="required">*</span></label>
+                                <input type="text" id="reqPatientName" required placeholder="e.g. Ramesh Kumar">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqBloodGroup">Required Blood Group <span class="required">*</span></label>
+                                <select id="reqBloodGroup" required>
+                                    <option value="" disabled selected>Select blood group</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqHospital">Hospital Name & Address <span class="required">*</span></label>
+                                <input type="text" id="reqHospital" list="hospitalList" required placeholder="Type hospital name or address...">
+                                <datalist id="hospitalList">
+                                    <option value="Apollo Hospitals, Greams Road, Chennai"></option>
+                                    <option value="Rajiv Gandhi Government General Hospital (GGH), Chennai"></option>
+                                    <option value="Stanley Medical College Hospital, Chennai"></option>
+                                    <option value="Kilpauk Medical College Hospital (KMCH), Chennai"></option>
+                                    <option value="Fortis Malar Hospital, Adyar, Chennai"></option>
+                                    <option value="MIOT International, Manapakkam, Chennai"></option>
+                                    <option value="Sri Ramachandra Medical Centre, Porur, Chennai"></option>
+                                    <option value="Christian Medical College (CMC), Vellore"></option>
+                                    <option value="Ganga Hospital, Ramnagar, Coimbatore"></option>
+                                    <option value="Kovai Medical Center and Hospital (KMCH), Coimbatore"></option>
+                                    <option value="PSG Hospitals, Peelamedu, Coimbatore"></option>
+                                    <option value="Government Rajaji Hospital (GRH), Madurai"></option>
+                                    <option value="Meenakshi Mission Hospital, Madurai"></option>
+                                    <option value="Velammal Medical College Hospital, Madurai"></option>
+                                    <option value="Kauvery Hospital, Tennur, Trichy"></option>
+                                    <option value="Mahatma Gandhi MGM Government Hospital, Trichy"></option>
+                                    <option value="Government Mohan Kumaramangalam Hospital, Salem"></option>
+                                    <option value="Tirunelveli Medical College Hospital (TVMC), Tirunelveli"></option>
+                                </datalist>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqDistrict">District (Tamil Nadu) <span class="required">*</span></label>
+                                <select id="reqDistrict" required onchange="handleDistrictChange('reqDistrict', 'reqAreaList')">
+                                    <option value="" disabled selected>Select District</option>
+                                    <!-- Dynamic List -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqArea">Area / Taluk (Hospital Location) <span class="required">*</span></label>
+                                <input type="text" id="reqArea" list="reqAreaList" required placeholder="Type or select area...">
+                                <datalist id="reqAreaList"></datalist>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqLandmark">Landmark / Hospital Landmark</label>
+                                <input type="text" id="reqLandmark" list="landmarkList" placeholder="e.g. Near Bus Stand, Opp Railway Station">
+                                <datalist id="landmarkList">
+                                    <option value="Near Central Railway Station"></option>
+                                    <option value="Opposite Central Bus Stand"></option>
+                                    <option value="Near Collectorate Office"></option>
+                                    <option value="Near Government Hospital Square"></option>
+                                    <option value="Opposite Post Office"></option>
+                                    <option value="Near Clock Tower"></option>
+                                    <option value="Near Bypass Junction"></option>
+                                </datalist>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqUnits">Required Units (Pints/Bags) <span class="required">*</span></label>
+                                <input type="number" id="reqUnits" min="1" max="100" required placeholder="e.g. 2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqUrgency">Urgency Level <span class="required">*</span></label>
+                                <select id="reqUrgency" required>
+                                    <option value="Normal" selected>Normal</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Critical">Critical (Immediate Need)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="reqPhone">Attender / Contact Phone (10 digits) <span class="required">*</span></label>
+                                <div class="input-phone-container">
+                                    <span class="phone-prefix">+91</span>
+                                    <input type="tel" id="reqPhone" pattern="[6-9][0-9]{9}" required placeholder="9876543210">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label for="reqNotes">Additional Instructions / Case Details</label>
+                            <textarea id="reqNotes" rows="3" placeholder="Mention why it's needed, ICU bed details, or any other constraints..."></textarea>
+                        </div>
+
+                        <div class="form-group full-width" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
+                            <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; user-select: none;">
+                                <input type="checkbox" id="reqDisclaimer" required style="margin-top: 0.2rem;">
+                                <span><strong>Disclaimer:</strong> I understand that this platform only connects donors with recipients. The final compatibility tests and health checks will be performed at the hospital before transfusion. <span class="required">*</span></span>
+                            </label>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="reset" class="btn btn-secondary">Reset Form</button>
+                            <button type="submit" class="btn btn-primary">Post Request</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Donors List Tab -->
+            <section id="donorsTab" class="tab-content">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-users text-primary"></i> Registered Donors</h2>
+                    <p>Search and filter active donors across Tamil Nadu.</p>
+                </div>
+
+                <div class="filter-bar glass-card">
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label for="filterBloodGroup">Blood Group</label>
+                            <select id="filterBloodGroup" onchange="applyDonorFilters()">
+                                <option value="All">All Blood Groups</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterDistrict">District</label>
+                            <select id="filterDistrict" onchange="applyDonorFilters()">
+                                <option value="All">All Districts</option>
+                                <!-- Dynamic List -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterAvailability">Availability</label>
+                            <select id="filterAvailability" onchange="applyDonorFilters()">
+                                <option value="All">All Donors</option>
+                                <option value="Available" selected>Available Only</option>
+                            </select>
+                        </div>
+                        <div class="form-group search-group">
+                            <label for="searchDonorQuery">Search Name/Area</label>
+                            <div class="search-input-wrapper">
+                                <input type="text" id="searchDonorQuery" placeholder="Search..." oninput="applyDonorFilters()">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Donors Grid -->
+                <div class="donors-grid" id="donorsGrid">
+                    <!-- Dynamic Donor Cards -->
+                </div>
+                <div class="empty-state hidden" id="donorsEmptyState">
+                    <i class="fa-solid fa-user-slash"></i>
+                    <h3>No Donors Found</h3>
+                    <p>Try modifying your filters or register a new donor yourself!</p>
+                </div>
+            </section>
+
+            <!-- Blood Requests Feed Tab -->
+            <section id="requests-feedTab" class="tab-content">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-hand-holding-heart text-primary"></i> Active Blood Requests</h2>
+                    <p>Review urgent blood requests from patients in various hospitals in Tamil Nadu.</p>
+                </div>
+
+                <!-- Requests List -->
+                <div class="requests-list" id="requestsFeedList">
+                    <!-- Dynamic Request Cards -->
+                </div>
+                <div class="empty-state hidden" id="requestsEmptyState">
+                    <i class="fa-solid fa-notes-medical"></i>
+                    <h3>No Active Requests</h3>
+                    <p>There are currently no active blood requests listed. Everything is secure.</p>
+                </div>
+            </section>
+
+            <!-- Match Donors Tab -->
+            <section id="matchTab" class="tab-content">
+                <div class="form-container glass-card">
+                    <div class="form-header">
+                        <h2><i class="fa-solid fa-circle-nodes text-primary"></i> Find Compatible Donors</h2>
+                        <p>Enter the patient's blood type and location. The matching engine computes the nearest compatible donors first using GPS coordinates.</p>
+                    </div>
+
+                    <form id="matchForm" onsubmit="findMatches(event)">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="matchBloodGroup">Patient Blood Group <span class="required">*</span></label>
+                                <select id="matchBloodGroup" required>
+                                    <option value="" disabled selected>Select blood group</option>
+                                    <option value="O+">O+</option>
+                                    <option value="O-">O-</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A-">A-</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B-">B-</option>
+                                    <option value="AB+">AB+</option>
+                                    <option value="AB-">AB-</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="matchDistrict">District (Location) <span class="required">*</span></label>
+                                <select id="matchDistrict" required onchange="handleDistrictChange('matchDistrict', 'matchAreaList')">
+                                    <option value="" disabled selected>Select District</option>
+                                    <!-- Dynamic List -->
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="matchArea">Area / Taluk</label>
+                                <input type="text" id="matchArea" list="matchAreaList" placeholder="Type or select area...">
+                                <datalist id="matchAreaList"></datalist>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="matchHospital">Hospital Name <span class="required">*</span></label>
+                                <input type="text" id="matchHospital" list="matchHospitalList" placeholder="e.g. Apollo Hospital, Chennai" required>
+                                <datalist id="matchHospitalList">
+                                    <option value="Apollo Hospitals, Greams Road, Chennai"></option>
+                                    <option value="Rajiv Gandhi Government General Hospital (GGH), Chennai"></option>
+                                    <option value="Stanley Medical College Hospital, Chennai"></option>
+                                    <option value="Kilpauk Medical College Hospital (KMCH), Chennai"></option>
+                                    <option value="Christian Medical College (CMC), Vellore"></option>
+                                    <option value="Kovai Medical Center and Hospital (KMCH), Coimbatore"></option>
+                                    <option value="Government Rajaji Hospital (GRH), Madurai"></option>
+                                    <option value="Mahatma Gandhi MGM Government Hospital, Trichy"></option>
+                                </datalist>
+                            </div>
+                        </div>
+
+                        <div class="form-actions match-actions">
+                            <button type="submit" class="btn btn-primary btn-lg full-width-btn">
+                                <i class="fa-solid fa-crosshairs"></i> Run Matching Algorithm
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Match Results Panel -->
+                <div id="matchResultsContainer" class="match-results-container hidden">
+                    <div class="results-header">
+                        <h3>Match Results</h3>
+                        <span id="matchStatsBadge" class="match-badge">0 matches found</span>
+                    </div>
+
+                    <div class="compatible-info-alert">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span id="compatibilityMessage">Showing compatible donor groups for the patient.</span>
+                    </div>
+
+                    <div class="donors-grid" id="matchedDonorsGrid">
+                        <!-- Matched Donors Card list -->
+                    </div>
+                </div>
+
+                <!-- Lookup Donor Location Panel -->
+                <div class="glass-card" style="margin-top: 2rem; padding: 1.5rem;">
+                    <h4><i class="fa-solid fa-map-location-dot text-primary"></i> Track Donor Location by Phone Number</h4>
+                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Enter a registered donor's phone number to view their registered location on Google Maps.</p>
+                    <div style="display: flex; gap: 0.5rem; max-width: 450px;">
+                        <input type="tel" id="lookupPhone" placeholder="Enter 10-digit phone number" class="form-control" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.25); color: white;">
+                        <button type="button" class="btn btn-primary" onclick="lookupDonorLocation()">Search Location</button>
+                    </div>
+                    <div id="lookupResult" class="hidden" style="margin-top: 1rem; padding: 1rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);"></div>
+                </div>
+            </section>
+
+            <!-- Compatibility Guide Tab -->
+            <section id="compatibilityTab" class="tab-content">
+                <div class="glass-card compatibility-card">
+                    <h2><i class="fa-solid fa-circle-info text-primary"></i> Blood Type Compatibility Guide</h2>
+                    <p>Select a blood group below to analyze its compatibility rules dynamically.</p>
+                    
+                    <div class="interactive-compat-box">
+                        <div class="form-group" style="max-width: 300px; margin-bottom: 2rem;">
+                            <label for="compatSelector">Select Blood Group</label>
+                            <select id="compatSelector" onchange="updateCompatibilityView()">
+                                <option value="" disabled selected>-- Select a blood group --</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+
+                        <div id="compatResults" class="compat-results hidden">
+                            <div class="compat-cards-grid">
+                                <div class="compat-result-card can-give">
+                                    <h4><i class="fa-solid fa-hand-holding-medical"></i> Can Give Blood To (Recipients)</h4>
+                                    <div class="compat-badges" id="canGiveBadges"></div>
+                                </div>
+                                <div class="compat-result-card can-receive">
+                                    <h4><i class="fa-solid fa-hand-holding-heart"></i> Can Receive Blood From (Donors)</h4>
+                                    <div class="compat-badges" id="canReceiveBadges"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="universal-status-box" id="universalStatusBox"></div>
+                        </div>
+                        
+                        <div id="compatPrompt" class="compat-prompt">
+                            <i class="fa-solid fa-hand-pointer"></i>
+                            <p>Please select a blood group to view compatibility rules.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Edit Donor Modal -->
+    <div id="editDonorModal" class="modal hidden">
+        <div class="modal-content glass-card">
+            <span class="close-modal" onclick="closeEditModal()">&times;</span>
+            <h3>Update Donor Status</h3>
+            <p>Modify availability and details for <strong id="editDonorNameText"></strong></p>
+            <form id="editDonorForm" onsubmit="handleEditDonorSubmit(event)">
+                <input type="hidden" id="editDonorId">
+                <div class="form-group">
+                    <label for="editAvailability">Availability Status</label>
+                    <div class="toggle-switch-container">
+                        <label class="switch">
+                            <input type="checkbox" id="editAvailability">
+                            <span class="slider round"></span>
+                        </label>
+                        <span class="toggle-label" id="editAvailabilityLabel">Available</span>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Donor Sign Up Modal -->
+    <div id="donorSignUpModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeDonorSignUpModal()">&times;</span>
+            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user-plus text-primary"></i> Create Account</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Sign up to create a donor profile.</p>
+            <form onsubmit="handleDonorSignUpSubmit(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="donorSignUpEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
+                    <input type="email" id="donorSignUpEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="donorSignUpPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
+                    <input type="password" id="donorSignUpPassword" required placeholder="Create a password" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Sign Up</button>
+                    
+                    <div style="display: flex; align-items: center; margin: 0.2rem 0;">
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                        <span style="padding: 0 10px; font-size: 0.8rem; color: var(--text-muted);">OR</span>
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                    </div>
+                    
+                    <!-- Official Google Sign-In Button Container -->
+                    <div id="googleSignInBtnSignup" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="closeDonorSignUpModal(); openDonorLoginModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 1rem;">Already have an account? Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Donor Login Modal -->
+    <div id="donorLoginModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 400px;">
+            <span class="close-modal" onclick="closeDonorLoginModal()">&times;</span>
+            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-user text-primary"></i> Donor Login</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">Log in with your email to access your donor profile.</p>
+            <form onsubmit="handleDonorLoginSubmit(event)">
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="donorLoginEmail" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Email Address</label>
+                    <input type="email" id="donorLoginEmail" required placeholder="yourname@example.com" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 1rem;">
+                    <label for="donorLoginPassword" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Password</label>
+                    <input type="password" id="donorLoginPassword" required placeholder="Enter your password" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-actions" style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.95rem; justify-content: center;"><i class="fa-solid fa-paper-plane"></i> Login</button>
+                    
+                    <div style="display: flex; align-items: center; margin: 0.2rem 0;">
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                        <span style="padding: 0 10px; font-size: 0.8rem; color: var(--text-muted);">OR</span>
+                        <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.2);"></div>
+                    </div>
+                    
+                    <!-- Official Google Sign-In Button Container -->
+                    <div id="googleSignInBtnLogin" style="display: flex; justify-content: center; width: 100%; margin-bottom: 0.5rem;"></div>
+                </div>
+                
+                <button type="button" class="btn btn-secondary" onclick="closeDonorLoginModal(); openDonorSignUpModal();" style="width: 100%; padding: 0.6rem; border-radius: 8px; font-size: 0.9rem; justify-content: center; margin-top: 1rem;">New Donor? Sign Up</button>
+            </form>
+        </div>
+    </div>
+
+
+
+    <!-- Admin Authentication Modal -->
+    <div id="adminAuthModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 380px;">
+            <span class="close-modal" onclick="closeAdminAuthModal()">&times;</span>
+            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-lock text-primary"></i> Admin Verification</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">This directory is restricted. Enter the Admin Password to unlock access.</p>
+            <form onsubmit="handleAdminAuthSubmit(event)">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="adminPasswordInput" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Admin Password</label>
+                    <input type="password" id="adminPasswordInput" required placeholder="••••••••" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdminAuthModal()" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Verify</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Email OTP Verification Modal -->
+
+
+    <script>
+        // Tamil Nadu Districts with Approximate Coordinates
+        const TAMIL_NADU_DISTRICTS = {
+            "Ariyalur": { lat: 11.1401, lng: 79.0747 },
+            "Chengalpattu": { lat: 12.6841, lng: 79.9836 },
+            "Chennai": { lat: 13.0827, lng: 80.2707 },
+            "Coimbatore": { lat: 11.0168, lng: 76.9558 },
+            "Cuddalore": { lat: 11.7480, lng: 79.7714 },
+            "Dharmapuri": { lat: 12.1211, lng: 78.1582 },
+            "Dindigul": { lat: 10.3673, lng: 77.9806 },
+            "Erode": { lat: 11.3410, lng: 77.7172 },
+            "Kallakurichi": { lat: 11.7380, lng: 78.9639 },
+            "Kanchipuram": { lat: 12.8342, lng: 79.7036 },
+            "Kanyakumari": { lat: 8.1833, lng: 77.4119 },
+            "Karur": { lat: 10.9601, lng: 78.0766 },
+            "Krishnagiri": { lat: 12.5186, lng: 78.2137 },
+            "Madurai": { lat: 9.9252, lng: 78.1198 },
+            "Mayiladuthurai": { lat: 11.1018, lng: 79.6522 },
+            "Nagapattinam": { lat: 10.7672, lng: 79.8444 },
+            "Namakkal": { lat: 11.2189, lng: 78.1672 },
+            "Nilgiris": { lat: 11.4102, lng: 76.6950 },
+            "Perambalur": { lat: 11.2333, lng: 78.8833 },
+            "Pudukkottai": { lat: 10.3797, lng: 78.8208 },
+            "Ramanathapuram": { lat: 9.3639, lng: 78.8395 },
+            "Ranipet": { lat: 12.9272, lng: 79.3328 },
+            "Salem": { lat: 11.6643, lng: 78.1460 },
+            "Sivaganga": { lat: 9.8433, lng: 78.4809 },
+            "Tenkasi": { lat: 8.9593, lng: 77.3142 },
+            "Thanjavur": { lat: 10.7870, lng: 79.1378 },
+            "Theni": { lat: 10.0104, lng: 77.4777 },
+            "Thoothukudi": { lat: 8.7642, lng: 78.1348 },
+            "Tiruchirappalli": { lat: 10.7905, lng: 78.7047 },
+            "Tirunelveli": { lat: 8.7139, lng: 77.7567 },
+            "Tirupathur": { lat: 12.4926, lng: 78.5678 },
+            "Tiruppur": { lat: 11.1085, lng: 77.3411 },
+            "Tiruvallur": { lat: 13.1438, lng: 79.9077 },
+            "Tiruvannamalai": { lat: 12.2253, lng: 79.0747 },
+            "Tiruvarur": { lat: 10.7749, lng: 79.6346 },
+            "Vellore": { lat: 12.9165, lng: 79.1325 },
+            "Viluppuram": { lat: 11.9401, lng: 79.4861 },
+            "Virudhunagar": { lat: 9.5680, lng: 77.9624 }
+        };
+
+        // Tamil Nadu Districts Sub-Areas for live autocomplete suggestions
+        const DISTRICT_AREAS = {
+            "Ariyalur": ["Ariyalur Town", "Jayankondam", "Sendurai", "Udayarpalayam", "Andimadam", "Thirumanur"],
+            "Chengalpattu": ["Tambaram", "Pallavaram", "Chromepet", "Chengalpattu Town", "Maduranthakam", "Mahabalipuram", "Vandalur", "Guduvanchery", "Maraimalai Nagar"],
+            "Chennai": ["Adyar", "Velachery", "T. Nagar", "Mylapore", "Anna Nagar", "Nungambakkam", "Guindy", "Royapettah", "Porur", "Besant Nagar", "Triplicane", "Saidapet", "Ambattur", "Perambur", "Kodambakkam", "Mogappair"],
+            "Coimbatore": ["Peelamedu", "Gandhipuram", "RS Puram", "Singanallur", "Saravanampatti", "Kovaipudur", "Saibaba Colony", "Vadavalli", "Pollachi", "Mettupalayam", "Sulur", "Thudiyalur"],
+            "Cuddalore": ["Cuddalore Town", "Chidambaram", "Panruti", "Virudhachalam", "Neyveli", "Kattumannarkoil", "Tittakudi", "Kurinjipadi"],
+            "Dharmapuri": ["Dharmapuri Town", "Harur", "Palacode", "Pennagaram", "Pappireddipatti", "Nallampalli", "Karimangalam"],
+            "Dindigul": ["Dindigul Town", "Palani", "Kodaikanal", "Oddanchatram", "Natham", "Batlagundu", "Nilakottai", "Vedasandur"],
+            "Erode": ["Erode Town", "Perundurai", "Gobichettipalayam", "Bhavani", "Sathyamangalam", "Anthiyur", "Kodumudi"],
+            "Kallakurichi": ["Kallakurichi Town", "Sankarapuram", "Chinnasalem", "Ulundurpet", "Tirukkoyilur", "Kalvarayan Hills"],
+            "Kanchipuram": ["Kanchipuram Town", "Sriperumbudur", "Kundrathur", "Walajabad", "Uthiramerur"],
+            "Kanyakumari": ["Nagercoil", "Kanyakumari Town", "Thuckalay", "Marthandam", "Colachel", "Padmanabhapuram", "Kuzhithurai"],
+            "Karur": ["Karur Town", "Kulithalai", "Aravakurichi", "Manmangalam", "Pugalur", "Krishnarayapuram"],
+            "Krishnagiri": ["Krishnagiri Town", "Hosur", "Denkanikottai", "Pochampalli", "Uthangarai", "Shoolagiri", "Bargur"],
+            "Madurai": ["Anna Nagar", "Goripalayam", "K.Pudur", "Sellur", "Mattuthavani", "Thirumangalam", "Melur", "Usilampatti", "Vadipatti", "Thiruparankundram"],
+            "Mayiladuthurai": ["Mayiladuthurai Town", "Sirkazhi", "Tharangambadi", "Kuthalam", "Poompuhar"],
+            "Nagapattinam": ["Nagapattinam Town", "Velankanni", "Vedaranyam", "Thirukkuvalai", "Kilvelur"],
+            "Namakkal": ["Namakkal Town", "Rasipuram", "Tiruchengode", "Komarapalayam", "Paramathi Velur", "Sendamangalam", "Kolli Hills"],
+            "Nilgiris": ["Ooty (Udhagamandalam)", "Coonoor", "Kotagiri", "Gudalur", "Wellington", "Kundah"],
+            "Perambalur": ["Perambalur Town", "Veppanthattai", "Alathur", "Kunnam"],
+            "Pudukkottai": ["Pudukkottai Town", "Aranthangi", "Alangudi", "Illuppur", "Gandarvakottai", "Karambakudi", "Thirumayam", "Ponnamaravathi"],
+            "Ramanathapuram": ["Ramanathapuram Town", "Rameswaram", "Paramakudi", "Keezhakarai", "Kamuthi", "Mudukulathur", "Tiruvadanai"],
+            "Ranipet": ["Ranipet Town", "Arakkonam", "Arcot", "Walajah", "Sholinghur", "Kalavai"],
+            "Salem": ["Shevapet", "Hasthampatti", "Suramangalam", "Fairlands", "Omalur", "Attur", "Mettur", "Yercaud", "Sankagiri", "Edappadi"],
+            "Sivaganga": ["Sivaganga Town", "Karaikudi", "Devakottai", "Manamadurai", "Kalayarkoil", "Tiruppattur", "Ilayangudi"],
+            "Tenkasi": ["Tenkasi Town", "Sankarankovil", "Kadayanallur", "Sengottai", "Alangulam", "Vasudevanallur", "Puliyangudi"],
+            "Thanjavur": ["Thanjavur Town", "Kumbakonam", "Pattukkottai", "Orathanadu", "Thiruvaiyaru", "Peravurani", "Papanasam"],
+            "Theni": ["Theni Town", "Bodinayakanur", "Cumbum", "Periyakulam", "Uthamapalayam", "Andipatti", "Chinnamanur"],
+            "Thoothukudi": ["Thoothukudi Town", "Kovilpatti", "Tiruchendur", "Srivaikuntam", "Ettayapuram", "Sathankulam", "Vilathikulam"],
+            "Tiruchirappalli": ["Cantonment", "Thillai Nagar", "Srirangam", "KK Nagar", "Lalgudi", "Tiruverumbur", "Musiri", "Manapparai", "Thuraiyur"],
+            "Tirunelveli": ["Palayamkottai", "Tirunelveli Town", "Junction", "Melapalayam", "Cheranmahadevi", "Vallioor", "Nanguneri", "Radhapuram"],
+            "Tirupathur": ["Tirupathur Town", "Vaniyambadi", "Ambur", "Natrampalli", "Jolarpet"],
+            "Tiruppur": ["Tiruppur Town", "Avinashi", "Palladam", "Kangeyam", "Udumalpet", "Dharapuram", "Madathukulam"],
+            "Tiruvallur": ["Tiruvallur Town", "Avadi", "Poonamallee", "Tiruttani", "Gummidipoondi", "Ponneri", "Redhills"],
+            "Tiruvannamalai": ["Tiruvannamalai Town", "Arani", "Cheyyar", "Polur", "Chengam", "Vandavasi", "Kalasapakkam"],
+            "Tiruvarur": ["Tiruvarur Town", "Mannargudi", "Thiruthuraipoondi", "Nannilam", "Kudavasal", "Valangaiman"],
+            "Vellore": ["Katpadi", "Sathuvachari", "Vellore Fort Area", "Bagayam", "Gudiyatham", "Pernambut", "Anaicut"],
+            "Viluppuram": ["Viluppuram Town", "Tindivanam", "Gingee", "Vikravandi", "Vanur", "Marakkanam"],
+            "Virudhunagar": ["Virudhunagar Town", "Sivakasi", "Rajapalayam", "Aruppukkottai", "Sattur", "Srivilliputhur", "Kariapatti"]
+        };
+
+
+
+        // Blood Compatibility Mapping (Recipient -> Compatible Donors)
+        const COMPATIBILITY_MAP = {
+            'O-': ['O-'],
+            'O+': ['O-', 'O+'],
+            'A-': ['O-', 'A-'],
+            'A+': ['O-', 'O+', 'A-', 'A+'],
+            'B-': ['O-', 'B-'],
+            'B+': ['O-', 'O+', 'B-', 'B+'],
+            'AB-': ['O-', 'A-', 'B-', 'AB-'],
+            'AB+': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']
+        };
+
+        let API_BASE_URL = 'https://bloodlink-backend-im81.onrender.com/api';
+        if (window.location.protocol === 'file:') {
+            API_BASE_URL = 'http://localhost:8080/api';
+        } else if (
+            window.location.hostname === 'localhost' || 
+            window.location.hostname === '127.0.0.1' ||
+            window.location.hostname.startsWith('192.168.') ||
+            window.location.hostname.startsWith('10.') ||
+            window.location.hostname.startsWith('172.')
+        ) {
+            API_BASE_URL = `http://${window.location.hostname}:8080/api`;
+        }
+        let isLiveApi = true;
+        let mockDonors = [];
+        let mockRequests = [];
+        let allLoadedDonors = [];
+
+        // Initialize App
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check for reset parameter to clear local storage
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('reset') === 'true') {
+                localStorage.clear();
+                sessionStorage.clear();
+                console.log("Local storage wiped via reset parameter.");
+                // Remove parameter from URL without reloading
+                window.history.replaceState({}, document.title, window.location.pathname);
+                showAlert('All local app data cleared successfully!', 'success');
+            }
+
+            populateDistricts();
+            setupSidebarNav();
+            setupToggleListeners();
+            initializeMockData();
+            checkApiConnection();
+            
+
+            updateAuthUI();
+            
+            // Check Admin Status on Load
+            if (sessionStorage.getItem('admin_verified') === 'true') {
+                const donorsTab = document.getElementById('navAdminDonors');
+                const adminLoginBtn = document.getElementById('adminLoginBtn');
+                
+                if(donorsTab) donorsTab.style.display = 'flex';
+                if(adminLoginBtn) adminLoginBtn.style.display = 'none';
+            }
+        });
+
+        // Setup sidebar tabs
+        function setupSidebarNav() {
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tabId = btn.getAttribute('data-tab');
+                    // Only intercept Register Donor for authentication
+                    if (tabId === 'register') {
+                        requireAuthAndNavigate(tabId);
+                    } else {
+                        switchTab(tabId);
+                    }
+                });
+            });
+        }
+
+        // Global variables to store temporary donor registration details during OTP verification
+        let pendingDonorData = null;
+        let pendingLoginEmail = '';
+
+        function openDonorSignUpModal() {
+            document.getElementById('donorSignUpEmail').value = '';
+            document.getElementById('donorSignUpModal').classList.remove('hidden');
+        }
+
+        function closeDonorSignUpModal() {
+            document.getElementById('donorSignUpModal').classList.add('hidden');
+        }
+
+        async function handleDonorSignUpSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('donorSignUpEmail').value.trim();
+            const password = document.getElementById('donorSignUpPassword').value;
+            
+            if (!email) {
+                showAlert('Please enter an email.', 'error');
+                return;
+            }
+            if (!password) {
+                showAlert('Please enter a password.', 'error');
+                return;
+            }
+
+            try {
+                // Check if email already exists
+                const response = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                if (response.ok) {
+                    // Email exists
+                    showAlert('Email already registered. Please login.', 'error');
+                    closeDonorSignUpModal();
+                    openDonorLoginModal();
+                } else if (response.status === 404) {
+                    // Email does not exist. Safe to register.
+                    localStorage.setItem('donor_verified_email', email);
+                    sessionStorage.setItem('pending_signup_password', password);
+                    closeDonorSignUpModal();
+                    
+                    const emailInput = document.getElementById('donorEmail');
+                    if (emailInput) {
+                        emailInput.value = email;
+                        emailInput.readOnly = true;
+                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    
+                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
+                    sessionStorage.removeItem('post_auth_tab');
+                    switchTab(targetTab);
+                } else {
+                    showAlert('An error occurred checking email availability.', 'error');
+                }
+            } catch (error) {
+                console.error('Error during sign up check:', error);
+                showAlert('Failed to connect to backend server.', 'error');
+            }
+        }
+
+        function requireAuthAndNavigate(targetTab) {
+            const isVerified = localStorage.getItem('donor_verified_email');
+            if (isVerified) {
+                if (targetTab === 'register') {
+                    const hasRegistered = localStorage.getItem('has_registered');
+                    if (hasRegistered === 'true') {
+                        showAlert('You are already registered! You can update your profile here.', 'info');
+                    }
+                    checkExistingDonorAndSetupForm(isVerified);
+                }
+                switchTab(targetTab);
+            } else {
+                sessionStorage.setItem('post_auth_tab', targetTab);
+                openDonorSignUpModal();
+            }
+        }
+
+        function openDonorLoginModal() {
+            document.getElementById('donorLoginEmail').value = '';
+            document.getElementById('donorLoginModal').classList.remove('hidden');
+        }
+
+        function closeDonorLoginModal() {
+            document.getElementById('donorLoginModal').classList.add('hidden');
+        }
+
+        async function handleDonorLoginSubmit(event) {
+            event.preventDefault();
+            const email = document.getElementById('donorLoginEmail').value.trim();
+            const password = document.getElementById('donorLoginPassword').value;
+            
+            if (!email || !password) {
+                showAlert('Please enter both email and password.', 'error');
+                return;
+            }
+
+            try {
+                let userExists = false;
+                let loginSuccess = false;
+                if (isLiveApi) {
+                    const loginRes = await fetch(`${API_BASE_URL}/login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: email, password: password })
+                    });
+                    
+                    if (loginRes.ok) {
+                        loginSuccess = true;
+                        userExists = true;
+                    } else if (loginRes.status === 404) {
+                        userExists = false;
+                    } else {
+                        userExists = true;
+                        loginSuccess = false;
+                    }
+                }
+                
+                if (!isLiveApi) {
+                    const localExists = (mockDonors || []).find(d => d.email === email);
+                    if (localExists) {
+                        userExists = true;
+                        loginSuccess = true;
+                    }
+                }
+
+                if (loginSuccess) {
+                    localStorage.setItem('donor_verified_email', email);
+                    localStorage.setItem('has_registered', 'true');
+                    closeDonorLoginModal();
+                    
+                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
+                    sessionStorage.removeItem('post_auth_tab');
+                    switchTab(targetTab);
+                    
+                    if (targetTab === 'register') {
+                        checkExistingDonorAndSetupForm(email);
+                    }
+                } else if (userExists && !loginSuccess) {
+                    showAlert('Invalid email or password.', 'error');
+                } else {
+                    showAlert('Account not found. Please sign up first.', 'warning');
+                    closeDonorLoginModal();
+                    openDonorSignUpModal();
+                    document.getElementById('donorSignUpEmail').value = email;
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+                showAlert('Failed to connect to backend server.', 'error');
+            }
+        }
+
+        async function checkExistingDonorAndSetupForm(email) {
+            try {
+                let existing = null;
+                if (isLiveApi) {
+                    const response = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                    if (response.ok) {
+                        existing = await response.json();
+                    }
+                } else {
+                    existing = (mockDonors || []).find(d => d.email === email);
+                }
+
+                if (existing) {
+                    const formTitle = document.querySelector('#registerTab .form-header h2');
+                    const formDesc = document.querySelector('#registerTab .form-header p');
+                    const submitBtn = document.querySelector('#registerTab button[type="submit"]');
+                    const banner = document.getElementById('updateProfileBanner');
+                    
+                    sessionStorage.setItem('donor_id', existing.id);
+                        
+                        // Pre-fill form values
+                        document.getElementById('donorName').value = existing.name || '';
+                        document.getElementById('donorBloodGroup').value = existing.bloodGroup || existing.blood_group || '';
+                        document.getElementById('donorDistrict').value = existing.city || '';
+                        
+                        // Trigger district change to load areas
+                        handleDistrictChange('donorDistrict', 'donorAreaList');
+                        document.getElementById('donorArea').value = existing.area || '';
+                        document.getElementById('donorPhone').value = existing.phone || '';
+                        document.getElementById('donorEmail').value = existing.email || '';
+                        document.getElementById('donorEmail').readOnly = true;
+                        document.getElementById('donorEmail').style.backgroundColor = 'rgba(255,255,255,0.05)';
+
+                        document.getElementById('donorLastDonation').value = existing.lastDonation || existing.last_donation || '';
+                        document.getElementById('donorAvailability').checked = existing.availability !== false;
+                        document.getElementById('donorBio').value = existing.bio || '';
+                        
+                        const latVal = existing.latitude;
+                        const lngVal = existing.longitude;
+                        document.getElementById('donorLat').value = latVal || '';
+                        document.getElementById('donorLng').value = lngVal || '';
+                        
+                        const status = document.getElementById('locationStatus');
+                        if (latVal && lngVal && status) {
+                            status.innerHTML = `<span style="color: #4cd137;"><i class="fa-solid fa-circle-check"></i> GPS Linked (${parseFloat(latVal).toFixed(4)}, ${parseFloat(lngVal).toFixed(4)})</span>`;
+                        } else if (status) {
+                            status.textContent = 'Not shared (uses district center)';
+                            status.style.color = 'var(--text-muted)';
+                        }
+
+                        // Update toggle switch label
+                        const label = document.getElementById('availabilityLabel');
+                        if (label) {
+                            label.textContent = existing.availability !== false ? 'Available to Donate Now' : 'Busy / Not Available';
+                        }
+                        
+                        // Check screening checkmarks (since we update, we check them so they don't have to re-tick them for simple status updates)
+                        document.getElementById('healthTattoo').checked = true;
+                        document.getElementById('healthAlcohol').checked = true;
+                        document.getElementById('healthDisease').checked = true;
+                        document.getElementById('healthWeight').checked = true;
+                        document.getElementById('donorDisclaimer').checked = true;
+
+                        if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-pen text-primary"></i> Update Your Donor Profile';
+                        if (formDesc) formDesc.textContent = 'Manage your availability status, contact details, and location for matching.';
+                        if (submitBtn) submitBtn.textContent = 'Update Profile';
+                        
+                        // Hide password field during update
+                        const pwdInput = document.getElementById('donorPassword');
+                        if (pwdInput) {
+                            const pwdGroup = pwdInput.closest('.form-group');
+                            if (pwdGroup) {
+                                pwdGroup.style.display = 'none';
+                            }
+                            pwdInput.value = 'AuthPlaceholder123';
+                        }
+                    } else {
+                        sessionStorage.removeItem('donor_id');
+                        
+                        // Reset fields (except email)
+                        document.getElementById('donorName').value = '';
+                        document.getElementById('donorBloodGroup').value = '';
+                        document.getElementById('donorDistrict').value = '';
+                        document.getElementById('donorArea').value = '';
+                        document.getElementById('donorPhone').value = '';
+                        
+                        document.getElementById('donorEmail').value = email;
+                        document.getElementById('donorEmail').readOnly = true;
+                        document.getElementById('donorEmail').style.backgroundColor = 'rgba(255,255,255,0.05)';
+                        
+                        document.getElementById('donorLastDonation').value = '';
+                        document.getElementById('donorAvailability').checked = true;
+                        document.getElementById('donorBio').value = '';
+                        document.getElementById('donorLat').value = '';
+                        document.getElementById('donorLng').value = '';
+                        
+                        document.getElementById('healthTattoo').checked = false;
+                        document.getElementById('healthAlcohol').checked = false;
+                        document.getElementById('healthDisease').checked = false;
+                        document.getElementById('healthWeight').checked = false;
+                        document.getElementById('donorDisclaimer').checked = false;
+
+                        if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor';
+                        if (formDesc) formDesc.textContent = 'Be someone\'s hero. Register your details to join the active pool of donors in Tamil Nadu.';
+                        if (submitBtn) submitBtn.textContent = 'Submit Registration';
+                        
+                        if (banner) banner.classList.add('hidden');
+                    }
+            } catch (err) {
+                console.error('Error checking existing donor:', err);
+            }
+        }
+
+        function handleDonorRegistrationSubmit(event) {
+            event.preventDefault();
+            
+            const latVal = document.getElementById('donorLat').value;
+            const lngVal = document.getElementById('donorLng').value;
+            const email = document.getElementById('donorEmail').value.trim();
+
+            if (!email) {
+                showAlert('Please provide your email address.', 'error');
+                return;
+            }
+
+            pendingDonorData = {
+                name: document.getElementById('donorName').value,
+                bloodGroup: document.getElementById('donorBloodGroup').value,
+                city: document.getElementById('donorDistrict').value,
+                area: document.getElementById('donorArea').value,
+                phone: document.getElementById('donorPhone').value,
+                email: email,
+                password: sessionStorage.getItem('pending_signup_password') || null,
+                lastDonation: document.getElementById('donorLastDonation').value || null,
+                availability: document.getElementById('donorAvailability').checked,
+                bio: document.getElementById('donorBio').value,
+                latitude: latVal ? parseFloat(latVal) : null,
+                longitude: lngVal ? parseFloat(lngVal) : null
+            };
+
+            proceedWithDonorRegistration();
+        }
+
+
+
+        let pendingTargetTab = '';
+
+        function openAdminAuthModal(targetTab) {
+            pendingTargetTab = targetTab;
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminAuthModal').classList.remove('hidden');
+        }
+
+        function closeAdminAuthModal() {
+            document.getElementById('adminAuthModal').classList.add('hidden');
+            showAlert('Only Admin can access', 'error');
+        }
+
+        function handleAdminAuthSubmit(event) {
+            event.preventDefault();
+            const password = document.getElementById('adminPasswordInput').value;
+            if (password === 'kabipachi123') {
+                sessionStorage.setItem('admin_verified', 'true');
+                document.getElementById('adminAuthModal').classList.add('hidden');
+                showAlert('Admin verification successful!', 'success');
+                
+                // Reveal Admin Tabs
+                document.getElementById('navAdminDonors').style.display = 'flex';
+                document.getElementById('adminLoginBtn').style.display = 'none';
+
+                if (pendingTargetTab) {
+                    switchTab(pendingTargetTab);
+                }
+            } else {
+                document.getElementById('adminAuthModal').classList.add('hidden');
+                showAlert('Only Admin can access', 'error');
+            }
+        }
+
+        function switchTab(tabId) {
+            if (tabId === 'donors') {
+                const isAdmin = sessionStorage.getItem('admin_verified') === 'true';
+                if (!isAdmin) {
+                    openAdminAuthModal(tabId);
+                    return;
+                }
+            }
+            if (tabId === 'register') {
+                // Anyone can access the registration tab now
+            }
+            if (tabId === 'match') {
+                if (sessionStorage.getItem('active_blood_request') !== 'true') {
+                    showAlert('Please submit a blood request first.', 'warning');
+                    switchTab('request');
+                    return;
+                }
+            }
+
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if (btn.getAttribute('data-tab') === tabId) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                if (tab.id === `${tabId}Tab`) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+
+            if (tabId === 'donors') {
+                loadDonors();
+            } else if (tabId === 'requests-feed') {
+                loadRequests();
+            } else if (tabId === 'home') {
+                loadStats();
+            }
+        }
+
+        function setupToggleListeners() {
+            const availToggle = document.getElementById('donorAvailability');
+            availToggle.addEventListener('change', (e) => {
+                const label = document.getElementById('availabilityLabel');
+                label.textContent = e.target.checked ? 'Available to Donate Now' : 'Busy / Not Available';
+            });
+
+            const editToggle = document.getElementById('editAvailability');
+            editToggle.addEventListener('change', (e) => {
+                const label = document.getElementById('editAvailabilityLabel');
+                label.textContent = e.target.checked ? 'Available' : 'Not Available';
+            });
+        }
+
+        // Populate Tamil Nadu districts dropdowns
+        function populateDistricts() {
+            const districtDropdowns = [
+                document.getElementById('donorDistrict'),
+                document.getElementById('reqDistrict'),
+                document.getElementById('filterDistrict'),
+                document.getElementById('matchDistrict')
+            ];
+
+            const sortedDistricts = Object.keys(TAMIL_NADU_DISTRICTS).sort();
+            
+            districtDropdowns.forEach(dropdown => {
+                if (!dropdown) return;
+                
+                sortedDistricts.forEach(district => {
+                    const option = document.createElement('option');
+                    option.value = district;
+                    option.textContent = district;
+                    dropdown.appendChild(option);
+                });
+            });
+        }
+
+        // Handle District selection changes to update Area suggestion datalist dynamically
+        function handleDistrictChange(selectId, datalistId) {
+            const select = document.getElementById(selectId);
+            const datalist = document.getElementById(datalistId);
+            if (!select || !datalist) return;
+
+            const district = select.value;
+            datalist.innerHTML = '';
+
+            const areas = DISTRICT_AREAS[district] || [];
+            areas.forEach(area => {
+                const option = document.createElement('option');
+                option.value = area;
+                datalist.appendChild(option);
+            });
+        }
+
+        // Get Live GPS Location using Geolocation API
+        function getLiveLocation() {
+            const status = document.getElementById('locationStatus');
+            const latInput = document.getElementById('donorLat');
+            const lngInput = document.getElementById('donorLng');
+
+            if (!navigator.geolocation) {
+                status.textContent = 'Geolocation not supported by browser.';
+                status.style.color = '#ff4d5a';
+                return;
+            }
+
+            status.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Getting location...';
+            status.style.color = 'var(--text-muted)';
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    latInput.value = lat;
+                    lngInput.value = lng;
+                    status.innerHTML = `<span style="color: #4cd137;"><i class="fa-solid fa-circle-check"></i> GPS Linked (${lat.toFixed(4)}, ${lng.toFixed(4)})</span>`;
+                    showAlert('GPS Location successfully linked to your profile!', 'success');
+                },
+                (error) => {
+                    console.error("Location error", error);
+                    status.textContent = 'Failed to get location (Permission denied or timeout).';
+                    status.style.color = '#ff4d5a';
+                },
+                { enableHighAccuracy: true, timeout: 8000 }
+            );
+        }
+
+        // Report Fake Donor
+        function reportDonor(id, name) {
+            let reported = JSON.parse(localStorage.getItem('reported_donors') || '[]');
+            if (!reported.includes(id)) {
+                reported.push(id);
+                localStorage.setItem('reported_donors', JSON.stringify(reported));
+                showAlert(`Donor ${name} has been reported. Admin verification pending.`, 'warning');
+            } else {
+                showAlert(`Donor ${name} has already been reported.`, 'info');
+            }
+            loadDonors();
+        }
+
+        // Lookup Donor Location by Phone Number
+        async function lookupDonorLocation() {
+            const phone = document.getElementById('lookupPhone').value.trim();
+            const resultDiv = document.getElementById('lookupResult');
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<p><i class="fa-solid fa-spinner fa-spin"></i> Searching for donor location...</p>';
+
+            if (!phone || phone.length !== 10) {
+                resultDiv.innerHTML = `<p style="color: #ff4d5a;"><i class="fa-solid fa-triangle-exclamation"></i> Please enter a valid 10-digit phone number.</p>`;
+                return;
+            }
+
+            let donor = null;
+            if (isLiveApi) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/donors`);
+                    if (res.ok) {
+                        const donors = await res.json();
+                        donor = donors.find(d => d.phone === phone);
+                    }
+                } catch (e) {
+                    console.error("Live lookup failed", e);
+                }
+            }
+            
+            if (!donor) {
+                donor = allLoadedDonors.find(d => d.phone === phone) || mockDonors.find(d => d.phone === phone);
+            }
+
+            if (!donor) {
+                resultDiv.innerHTML = `<p style="color: #ff4d5a;"><i class="fa-solid fa-magnifying-glass"></i> No donor found with phone number +91 ${phone}.</p>`;
+                return;
+            }
+
+            const hasCoords = (donor.latitude !== undefined && donor.latitude !== null && donor.latitude !== 0) &&
+                              (donor.longitude !== undefined && donor.longitude !== null && donor.longitude !== 0);
+            
+            let locationHtml = '';
+            if (hasCoords) {
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${donor.latitude},${donor.longitude}`;
+                locationHtml = `
+                    <p style="color: #4cd137; margin: 0.25rem 0;"><i class="fa-solid fa-circle-check"></i> <strong>Location Status:</strong> Exact GPS coordinates registered!</p>
+                    <p style="margin: 0.25rem 0;"><strong>Coordinates:</strong> Latitude: ${donor.latitude.toFixed(6)}, Longitude: ${donor.longitude.toFixed(6)}</p>
+                    <a href="${mapsUrl}" target="_blank" class="btn btn-primary btn-sm" style="margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none;">
+                        <i class="fa-solid fa-map-location"></i> View on Google Maps
+                    </a>
+                `;
+                
+                // Show on Leaflet Map
+                if (typeof L !== 'undefined' && leafletMap) {
+                    leafletMap.setView([donor.latitude, donor.longitude], 15);
+                    const searchedIcon = L.divIcon({
+                        className: 'custom-div-icon',
+                        html: `<div style='background-color:#ff4d5a; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 15px rgba(255,77,90,0.9); animation: pulse 1.5s infinite;'></div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 12]
+                    });
+                    const marker = L.marker([donor.latitude, donor.longitude], {icon: searchedIcon}).addTo(leafletMap);
+                    marker.bindPopup(`<b style="color:var(--accent-red); font-size:1.1rem;">${donor.name} (${donor.bloodGroup || donor.blood_group})</b><br>${donor.phone}<br>${donor.area || ''}, ${donor.city}`).openPopup();
+                    mapMarkers.push(marker);
+                    setTimeout(() => {
+                        document.getElementById('liveMap').scrollIntoView({behavior: 'smooth', block: 'center'});
+                    }, 100);
+                }
+            } else {
+                const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(donor.area + ', ' + donor.city + ', Tamil Nadu')}`;
+                locationHtml = `
+                    <p style="color: var(--text-muted); margin: 0.25rem 0;"><i class="fa-solid fa-circle-info"></i> <strong>Location Status:</strong> District center fallback (exact GPS not shared).</p>
+                    <p style="margin: 0.25rem 0;"><strong>District:</strong> ${donor.city}, Area: ${donor.area || 'N/A'}</p>
+                    <a href="${mapsUrl}" target="_blank" class="btn btn-secondary btn-sm" style="margin-top: 0.5rem; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white;">
+                        <i class="fa-solid fa-map-location"></i> View District on Google Maps
+                    </a>
+                `;
+                
+                // Fallback: zoom to district if possible
+                if (typeof L !== 'undefined' && leafletMap && TAMIL_NADU_DISTRICTS[donor.city]) {
+                    const dCoords = TAMIL_NADU_DISTRICTS[donor.city];
+                    leafletMap.setView([dCoords.lat, dCoords.lng], 10);
+                    setTimeout(() => {
+                        document.getElementById('liveMap').scrollIntoView({behavior: 'smooth', block: 'center'});
+                    }, 100);
+                }
+            }
+
+            resultDiv.innerHTML = `
+                <h5 style="margin-bottom: 0.5rem; color: var(--text-primary); font-size: 1.05rem;">${donor.name} (${donor.bloodGroup || donor.blood_group})</h5>
+                ${locationHtml}
+            `;
+        }
+
+        // OpenStreetMap Nominatim Hospital Geocoder
+        async function geocodeHospital(hospitalName, districtName) {
+            try {
+                const query = `${hospitalName}, ${districtName}, Tamil Nadu, India`;
+                const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`;
+                const response = await fetch(url, {
+                    headers: { 'Accept-Language': 'en' }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        return {
+                            lat: parseFloat(data[0].lat),
+                            lng: parseFloat(data[0].lon),
+                            displayName: data[0].display_name
+                        };
+                    }
+                }
+            } catch (e) {
+                console.error("Geocoding failed", e);
+            }
+            return null;
+        }
+
+        // Test Connection to Backend
+        async function checkApiConnection() {
+            const statusIndicator = document.getElementById('systemStatus');
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 60000); // Wait 60s for Render cold start
+                
+                const response = await fetch(`${API_BASE_URL}/donors`, { 
+                    signal: controller.signal 
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (response.ok) {
+                    isLiveApi = true;
+                    statusIndicator.innerHTML = '<span class="status-indicator live"></span><span class="status-text">Connected to MySQL API</span>';
+                    statusIndicator.querySelector('.status-indicator').classList.add('live');
+                } else {
+                    throw new Error('Server returned error status');
+                }
+            } catch (err) {
+                // We keep isLiveApi = true to force the app to always ATTEMPT backend calls
+                // If it fails during a specific action, the catch block of that action will handle the fallback.
+                statusIndicator.innerHTML = '<span class="status-indicator offline"></span><span class="status-text">Backend Unreachable (Mock Data Fallback)</span>';
+                console.log('Backend connection failed. Operating in offline LocalStorage mode.', err);
+            }
+            loadStats();
+        }
+
+        // Initialize Mock Data in LocalStorage (No default values)
+        function initializeMockData() {
+            if (!localStorage.getItem('bloodlink_clean_db_v7')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                localStorage.setItem('bloodlink_clean_db_v7', 'true');
+            }
+
+            if (!localStorage.getItem('bloodlink_donors')) {
+                localStorage.setItem('bloodlink_donors', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('bloodlink_requests')) {
+                localStorage.setItem('bloodlink_requests', JSON.stringify([]));
+            }
+
+            mockDonors = JSON.parse(localStorage.getItem('bloodlink_donors'));
+            mockRequests = JSON.parse(localStorage.getItem('bloodlink_requests'));
+        }
+
+        // Load stats for Home page
+        async function loadStats() {
+            let donorsCount = 0;
+            let requestsCount = 0;
+
+            if (isLiveApi) {
+                try {
+                    const donorsResponse = await fetch(`${API_BASE_URL}/donors`);
+                    const donors = await donorsResponse.json();
+                    donorsCount = donors.filter(d => d.availability || d.availability === undefined).length;
+
+                    const reqResponse = await fetch(`${API_BASE_URL}/requests`);
+                    const reqs = await reqResponse.json();
+                    requestsCount = reqs.filter(r => r.status === 'Active' || r.status === 'ACTIVE').length;
+                } catch (e) {
+                    console.error("Failed to load live stats. Using mocks.", e);
+                    donorsCount = mockDonors.filter(d => d.availability).length;
+                    requestsCount = mockRequests.filter(r => r.status === 'Active').length;
+                }
+            } else {
+                donorsCount = mockDonors.filter(d => d.availability).length;
+                requestsCount = mockRequests.filter(r => r.status === 'Active').length;
+            }
+
+            document.getElementById('statDonorsCount').textContent = donorsCount;
+            document.getElementById('statRequestsCount').textContent = requestsCount;
+        }
+
+        // Load Donors
+        async function loadDonors() {
+            if (isLiveApi) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/donors`);
+                    allLoadedDonors = await res.json();
+                } catch (e) {
+                    console.error("Failed fetching live donors, fallback to mock", e);
+                    allLoadedDonors = mockDonors;
+                }
+            } else {
+                allLoadedDonors = mockDonors;
+            }
+            renderDonorsList(allLoadedDonors);
+        }
+
+        // Apply Donor Filters (called on search or dropdown filter changes)
+        function applyDonorFilters() {
+            renderDonorsList(allLoadedDonors);
+        }
+
+        // Render Donors
+        function renderDonorsList(donors) {
+            const grid = document.getElementById('donorsGrid');
+            const emptyState = document.getElementById('donorsEmptyState');
+            grid.innerHTML = '';
+
+            const bg = document.getElementById('filterBloodGroup').value;
+            const dist = document.getElementById('filterDistrict').value;
+            const avail = document.getElementById('filterAvailability').value;
+            const q = document.getElementById('searchDonorQuery').value.toLowerCase().trim();
+
+            const filtered = donors.filter(d => {
+                const group = d.bloodGroup || d.blood_group;
+                if (bg !== 'All' && group !== bg) return false;
+                
+                const dCity = d.city;
+                if (dist !== 'All' && dCity !== dist) return false;
+                
+                const dAvail = d.availability !== undefined ? d.availability : d.availability;
+                if (avail === 'Available' && !dAvail) return false;
+
+                const dName = d.name.toLowerCase();
+                const dArea = (d.area || '').toLowerCase();
+                if (q && !dName.includes(q) && !dArea.includes(q)) return false;
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                grid.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.classList.remove('hidden');
+
+            filtered.forEach(d => {
+                const card = document.createElement('div');
+                const av = d.availability !== undefined ? d.availability : d.availability;
+                
+                const reported = JSON.parse(localStorage.getItem('reported_donors') || '[]');
+                const isReported = reported.includes(d.id);
+                
+                card.className = `donor-card glass-card ${!av ? 'unavailable' : ''} ${isReported ? 'reported-fake' : ''}`;
+                
+                const group = d.bloodGroup || d.blood_group;
+                const dateText = d.lastDonation || d.last_donation ? formatDate(d.lastDonation || d.last_donation) : 'Never';
+                
+                const reportedBadge = isReported ? `<span class="reported-fake-badge"><i class="fa-solid fa-triangle-exclamation"></i> Reported Fake</span>` : '';
+
+                // Bilingual WhatsApp Message
+                const waMsg = `Hello ${d.name}, we found your contact on BloodLink and need an urgent blood donation. Please help!\n\nவணக்கம் ${d.name}, BloodLink-ல் உங்கள் எண்ணைப் பார்த்தோம். அவசரமாக இரத்தம் தேவைப்படுகிறது. தயவுசெய்து உதவவும்!`;
+                const waUrl = `https://wa.me/91${d.phone}?text=${encodeURIComponent(waMsg)}`;
+
+                card.innerHTML = `
+                    <div class="donor-card-header">
+                        <div class="donor-avatar">
+                            <span>${group}</span>
+                        </div>
+                        <div class="donor-title">
+                            <h4 style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                                ${d.name} ${reportedBadge}
+                            </h4>
+                            <p><i class="fa-solid fa-location-dot"></i> ${d.area}, ${d.city}</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;"><i class="fa-solid fa-phone"></i> +91 ${d.phone}</p>
+                        </div>
+                    </div>
+                    <div class="donor-details">
+                        <p><strong>Last Donation:</strong> ${dateText}</p>
+                        <p><strong>Bio:</strong> ${d.bio || 'No bio provided.'}</p>
+                        <div class="status-pill ${av ? 'available' : 'busy'}">
+                            ${av ? 'Available to Donate' : 'Unavailable'}
+                        </div>
+                    </div>
+                    <div class="donor-card-actions">
+                        <a href="tel:+91${d.phone}" class="btn btn-call flex-btn">
+                            <i class="fa-solid fa-phone"></i> Call
+                        </a>
+                        <a href="${waUrl}" target="_blank" class="btn btn-whatsapp flex-btn">
+                            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                        </a>
+                        <button class="btn btn-secondary btn-sm edit-status-btn" onclick="openEditModal(${d.id}, '${d.name}', ${av})">
+                            <i class="fa-solid fa-pen-to-square"></i> Status
+                        </button>
+                        <button class="btn btn-danger btn-sm report-fake-btn" onclick="reportDonor(${d.id}, '${d.name}')" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #ef4444;" title="Report this donor as fake">
+                            <i class="fa-solid fa-flag"></i> Report
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Load Blood Requests
+        async function loadRequests() {
+            let reqs = [];
+            if (isLiveApi) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/requests`);
+                    reqs = await res.json();
+                } catch (e) {
+                    console.error("Failed fetching live requests, fallback to mock", e);
+                    reqs = mockRequests;
+                }
+            } else {
+                reqs = mockRequests;
+            }
+            renderRequestsFeed(reqs);
+        }
+
+        // Render Requests
+        function renderRequestsFeed(requests) {
+            const feed = document.getElementById('requestsFeedList');
+            const emptyState = document.getElementById('requestsEmptyState');
+            feed.innerHTML = '';
+
+            const isAdmin = sessionStorage.getItem('admin_verified') === 'true';
+            const myRequests = JSON.parse(localStorage.getItem('my_blood_requests') || '[]');
+
+            let activeReqs = requests.filter(r => r.status === 'Active' || r.status === 'ACTIVE');
+            
+            // Only admins see all requests. Normal users only see their own requests.
+            if (!isAdmin) {
+                activeReqs = activeReqs.filter(r => myRequests.includes(r.phone));
+            }
+
+            if (activeReqs.length === 0) {
+                emptyState.classList.remove('hidden');
+                feed.classList.add('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            feed.classList.remove('hidden');
+
+            activeReqs.sort((a, b) => {
+                const aUrg = a.urgency === 'Critical' ? 3 : (a.urgency === 'Medium' ? 2 : 1);
+                const bUrg = b.urgency === 'Critical' ? 3 : (b.urgency === 'Medium' ? 2 : 1);
+                if (bUrg !== aUrg) return bUrg - aUrg;
+                return new Date(b.createdAt || b.created_at) - new Date(a.createdAt || a.created_at);
+            });
+
+            activeReqs.forEach(r => {
+                const card = document.createElement('div');
+                card.className = `request-card glass-card urgency-${(r.urgency || '').toLowerCase()}`;
+                
+                const timeAgo = formatTimeAgo(r.createdAt || r.created_at);
+                const group = r.bloodGroup || r.blood_group;
+
+                // Extract Area and Landmark
+                let area = '';
+                let landmarkDisplay = r.landmark || '';
+                if (r.landmark && r.landmark.includes(' (Landmark: ')) {
+                    const parts = r.landmark.split(' (Landmark: ');
+                    area = parts[0];
+                    landmarkDisplay = parts[1].replace(')', '');
+                } else if (r.landmark) {
+                    area = r.landmark;
+                }
+
+                // Bilingual WhatsApp Message
+                const waMsg = `Hello, I saw your request on BloodLink for ${group} blood at ${r.hospital}. I would like to help!\n\nவணக்கம், BloodLink-ல் ${r.hospital}-ல் ${group} இரத்தம் தேவைப்படும் உங்களுடைய பதிவை பார்த்தேன். நான் இரத்த தானம் செய்து உதவ விரும்புகிறேன்!`;
+                const waUrl = `https://wa.me/91${r.phone}?text=${encodeURIComponent(waMsg)}`;
+
+                card.innerHTML = `
+                    <div class="request-card-left">
+                        <div class="request-blood-group-badge">
+                            <span>${group}</span>
+                        </div>
+                        <div class="urgency-badge ${(r.urgency || 'Normal').toLowerCase()}">${r.urgency}</div>
+                    </div>
+                    <div class="request-card-body">
+                        <div class="request-header-row">
+                            <h3>Need ${r.units} Units of ${group}</h3>
+                            <span class="request-time"><i class="fa-regular fa-clock"></i> ${timeAgo}</span>
+                        </div>
+                        <div class="request-patient-info">
+                            <p><strong>Patient:</strong> ${r.patientName || r.patient_name}</p>
+                            <p><strong>Hospital:</strong> ${r.hospital}</p>
+                            <p><i class="fa-solid fa-location-dot"></i> ${area ? area + ', ' : ''}${r.city}</p>
+                            ${landmarkDisplay ? `<p><i class="fa-solid fa-map-pin"></i> Landmark: ${landmarkDisplay}</p>` : ''}
+                        </div>
+                        ${r.notes ? `<div class="request-notes">"${r.notes}"</div>` : ''}
+                    </div>
+                    <div class="request-card-actions">
+                        <button class="btn btn-primary" onclick="startMatchForRequest('${group}', '${r.city}', '${area}')">
+                            <i class="fa-solid fa-crosshairs"></i> Find Match
+                        </button>
+                        <button class="btn btn-call" onclick="handleContactAttender(event, '${r.phone}', '${group}')">
+                            <i class="fa-solid fa-phone"></i> Call Attender
+                        </button>
+                        <button class="btn btn-whatsapp" onclick="handleContactAttender(event, '${r.phone}', '${group}', true, '${encodeURIComponent(waMsg)}')">
+                            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                        </button>
+                        <button class="btn btn-outline" onclick="fulfillRequest(${r.id})">
+                            <i class="fa-solid fa-check"></i> Fulfill
+                        </button>
+                    </div>
+                `;
+                feed.appendChild(card);
+            });
+        }
+
+        function handleContactAttender(event, phone, reqBloodGroup, isWhatsApp = false, waMsg = '') {
+            event.preventDefault();
+            proceedToContact(phone, isWhatsApp, waMsg);
+        }
+        
+        function proceedToContact(phone, isWhatsApp, waMsg) {
+            if (isWhatsApp) {
+                window.open(`https://wa.me/91${phone}?text=${waMsg}`, '_blank');
+            } else {
+                window.location.href = `tel:+91${phone}`;
+            }
+        }
+
+        // Switch to Match tab and pre-fill matching inputs for a specific blood request hospital
+        function startMatchForRequest(bloodGroup, district, area) {
+            document.getElementById('matchBloodGroup').value = bloodGroup;
+            document.getElementById('matchDistrict').value = district;
+            
+            handleDistrictChange('matchDistrict', 'matchAreaList');
+            document.getElementById('matchArea').value = area || '';
+            
+            sessionStorage.setItem('active_blood_request', 'true');
+            switchTab('match');
+            
+            const mockEvent = { preventDefault: () => {} };
+            findMatches(mockEvent);
+        }
+
+        // Submit Donor Registration
+        // Proceed with Donor Registration saving
+        async function proceedWithDonorRegistration() {
+            if (!pendingDonorData) return;
+            const donor = pendingDonorData;
+            let success = false;
+            const isUpdatingProfile = sessionStorage.getItem('donor_id') !== null;
+            
+            if (isLiveApi) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/donors`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            id: donor.id || null,
+                            name: donor.name,
+                            bloodGroup: donor.bloodGroup,
+                            blood_group: donor.bloodGroup,
+                            city: donor.city,
+                            area: donor.area,
+                            phone: donor.phone,
+                            email: donor.email,
+                            password: donor.password,
+                            lastDonation: donor.lastDonation,
+                            last_donation: donor.lastDonation,
+                            availability: donor.availability,
+                            bio: donor.bio,
+                            latitude: donor.latitude,
+                            longitude: donor.longitude
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        success = true;
+                        const savedDonor = await response.json();
+                        donor.id = savedDonor.id; // Get real ID from backend
+                    } else {
+                        const errorMsg = await response.text();
+                        console.error("Backend error:", errorMsg);
+                        showAlert("Registration Failed (Backend): " + errorMsg, "error");
+                        return; // Do not proceed to offline fallback if backend explicitly rejected it
+                    }
+                } catch (e) {
+                    console.error("Live API registration failed (Network Error), running local backup", e);
+                }
+            }
+
+            const verifiedEmail = localStorage.getItem('donor_verified_email');
+            
+            if (!success) {
+                if (verifiedEmail) {
+                    const idx = mockDonors.findIndex(d => d.email === verifiedEmail);
+                    if (idx !== -1) {
+                        donor.id = mockDonors[idx].id;
+                        mockDonors[idx] = { ...mockDonors[idx], ...donor };
+                    } else {
+                        donor.id = Date.now();
+                        mockDonors.push(donor);
+                    }
+                } else {
+                    donor.id = Date.now();
+                    mockDonors.push(donor);
+                }
+                localStorage.setItem('bloodlink_donors', JSON.stringify(mockDonors));
+            }
+            if (isUpdatingProfile) {
+                showAlert('Success! Profile updated successfully.', 'success');
+                setTimeout(() => {
+                    switchTab('home');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 1500);
+            } else {
+                showAlert('Success! Donor registration submitted successfully.', 'success');
+                // Populate and show the ID Card
+                document.getElementById('cardName').textContent = donor.name;
+                document.getElementById('cardBloodGroup').textContent = donor.bloodGroup || donor.blood_group;
+                document.getElementById('cardLocation').textContent = donor.city + ' / ' + donor.area;
+                document.getElementById('cardId').textContent = 'BLD-' + (donor.id || Date.now()).toString().slice(-6);
+                
+                document.getElementById('donorCardModal').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    switchTab('home');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 500);
+            }
+
+            localStorage.setItem('has_registered', 'true');
+            document.getElementById('donorForm').reset();
+            document.getElementById('availabilityLabel').textContent = 'Available to Donate Now';
+            document.getElementById('donorAreaList').innerHTML = '';
+            
+            const emailInput = document.getElementById('donorEmail');
+            if (emailInput && !localStorage.getItem('donor_verified_email')) {
+                emailInput.readOnly = false;
+            }
+            document.getElementById('locationStatus').textContent = 'Not shared (uses district center)';
+            document.getElementById('locationStatus').style.color = 'var(--text-muted)';
+            pendingDonorData = null;
+        }
+
+
+        // Submit Request Creation
+        async function handleRequestSubmit(event) {
+            event.preventDefault();
+
+            const reqArea = document.getElementById('reqArea').value;
+            const reqLandmark = document.getElementById('reqLandmark').value;
+            const combinedLandmark = reqArea + (reqLandmark ? " (Landmark: " + reqLandmark + ")" : "");
+
+            const request = {
+                patientName: document.getElementById('reqPatientName').value,
+                bloodGroup: document.getElementById('reqBloodGroup').value,
+                hospital: document.getElementById('reqHospital').value,
+                city: document.getElementById('reqDistrict').value,
+                landmark: combinedLandmark,
+                units: parseInt(document.getElementById('reqUnits').value),
+                urgency: document.getElementById('reqUrgency').value,
+                phone: document.getElementById('reqPhone').value,
+                notes: document.getElementById('reqNotes').value
+            };
+
+            let success = false;
+
+            if (isLiveApi) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/requests`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            patientName: request.patientName,
+                            patient_name: request.patientName,
+                            bloodGroup: request.bloodGroup,
+                            blood_group: request.bloodGroup,
+                            hospital: request.hospital,
+                            city: request.city,
+                            landmark: request.landmark,
+                            units: request.units,
+                            urgency: request.urgency,
+                            phone: request.phone,
+                            notes: request.notes,
+                            status: 'Active'
+                        })
+                    });
+
+                    if (response.ok) {
+                        success = true;
+                    }
+                } catch (e) {
+                    console.error("Live API request submission failed, running local backup", e);
+                }
+            }
+
+            if (!success) {
+                request.id = Date.now();
+                request.status = 'Active';
+                request.createdAt = new Date().toISOString();
+                mockRequests.push(request);
+                localStorage.setItem('bloodlink_requests', JSON.stringify(mockRequests));
+            }
+            
+            let myRequests = JSON.parse(localStorage.getItem('my_blood_requests') || '[]');
+            if (!myRequests.includes(request.phone)) {
+                myRequests.push(request.phone);
+                localStorage.setItem('my_blood_requests', JSON.stringify(myRequests));
+            }
+
+            sessionStorage.setItem('active_blood_request', 'true');
+            showAlert('Success! Emergency blood request posted to the board.', 'success');
+            document.getElementById('requestForm').reset();
+            document.getElementById('reqAreaList').innerHTML = '';
+
+            setTimeout(() => {
+                document.getElementById('matchBloodGroup').value = request.bloodGroup;
+                document.getElementById('matchDistrict').value = request.city;
+                if(request.hospital) document.getElementById('matchHospital').value = request.hospital;
+                switchTab('match');
+            }, 800);
+        }
+
+        // Fulfill Blood Request
+        async function fulfillRequest(id) {
+            if (confirm('Mark this blood request as fulfilled?')) {
+                let success = false;
+                if (isLiveApi) {
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/requests/${id}/status`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                            body: 'status=Fulfilled'
+                        });
+                        if (response.ok) {
+                            success = true;
+                        }
+                    } catch (e) {
+                        console.error("Live API request update failed, running local backup", e);
+                    }
+                }
+
+                if (!success) {
+                    mockRequests = mockRequests.map(r => r.id === id ? { ...r, status: 'Fulfilled' } : r);
+                    localStorage.setItem('bloodlink_requests', JSON.stringify(mockRequests));
+                }
+
+                showAlert('Blood request marked as fulfilled!', 'success');
+                loadRequests();
+            }
+        }
+
+
+        // Match Donors and calculate relative proximity
+        async function findMatches(event) {
+            event.preventDefault();
+            
+            const targetBloodGroup = document.getElementById('matchBloodGroup').value;
+            const targetCity = document.getElementById('matchDistrict').value;
+            const targetArea = document.getElementById('matchArea').value.toLowerCase().trim();
+            const targetHospital = document.getElementById('matchHospital').value.trim();
+
+            const container = document.getElementById('matchResultsContainer');
+            const grid = document.getElementById('matchedDonorsGrid');
+            const badge = document.getElementById('matchStatsBadge');
+            const compMsg = document.getElementById('compatibilityMessage');
+
+            container.classList.remove('hidden');
+            grid.innerHTML = '<div class="searching-spinner"><i class="fa-solid fa-circle-notch fa-spin"></i> Geocoding hospital location and searching matches...</div>';
+
+            const compatibleGroups = COMPATIBILITY_MAP[targetBloodGroup] || [];
+            compMsg.textContent = `Patient with blood type ${targetBloodGroup} can receive from: ${compatibleGroups.join(', ')}`;
+
+            // Geocode hospital if provided
+            let targetCoords = TAMIL_NADU_DISTRICTS[targetCity];
+            let exactHospitalGeocoded = false;
+            if (targetHospital) {
+                const hospitalCoords = await geocodeHospital(targetHospital, targetCity);
+                if (hospitalCoords) {
+                    targetCoords = { lat: hospitalCoords.lat, lng: hospitalCoords.lng };
+                    exactHospitalGeocoded = true;
+                    console.log("Geocoded hospital coordinates successfully:", targetCoords);
+                } else {
+                    console.log("Geocoding failed for hospital, falling back to district center.");
+                }
+            }
+
+            let allDonors = [];
+            if (isLiveApi) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/donors/match?bloodGroup=${encodeURIComponent(targetBloodGroup)}&city=${encodeURIComponent(targetCity)}&area=${encodeURIComponent(targetArea)}`);
+                    if (response.ok) {
+                        allDonors = await response.json();
+                    } else {
+                        const res = await fetch(`${API_BASE_URL}/donors`);
+                        allDonors = await res.json();
+                    }
+                } catch (e) {
+                    console.error("Live match API failed, running locally", e);
+                    allDonors = mockDonors;
+                }
+            } else {
+                allDonors = mockDonors;
+            }
+            
+            let matches = allDonors.filter(d => {
+                const group = d.bloodGroup || d.blood_group;
+                const av = d.availability !== undefined ? d.availability : d.availability;
+                
+                if (!compatibleGroups.includes(group)) return false;
+                if (!av) return false;
+                
+                return true;
+            });
+
+            matches = matches.map(d => {
+                const dCity = d.city;
+                let dCoords = null;
+
+                // Check if donor has exact GPS coordinates
+                if (d.latitude !== undefined && d.latitude !== null && d.latitude !== 0 &&
+                    d.longitude !== undefined && d.longitude !== null && d.longitude !== 0) {
+                    dCoords = { lat: d.latitude, lng: d.longitude };
+                } else {
+                    dCoords = TAMIL_NADU_DISTRICTS[dCity];
+                }
+
+                let dist = 999999;
+                
+                if (targetCoords && dCoords) {
+                    dist = calculateHaversineDistance(
+                        targetCoords.lat, targetCoords.lng,
+                        dCoords.lat, dCoords.lng
+                    );
+                } else if (dCity === targetCity) {
+                    dist = 0;
+                }
+                
+                return { ...d, distance: dist };
+            });
+
+            // Sort: Exact City & Area first, then by distance
+            matches.sort((a, b) => {
+                const aCity = a.city;
+                const bCity = b.city;
+                const aArea = (a.area || '').toLowerCase();
+                const bArea = (b.area || '').toLowerCase();
+
+                if (aCity === targetCity && aArea === targetArea && (bCity !== targetCity || bArea !== targetArea)) return -1;
+                if (bCity === targetCity && bArea === targetArea && (aCity !== targetCity || aArea !== targetArea)) return 1;
+
+                if (aCity === targetCity && bCity !== targetCity) return -1;
+                if (bCity === targetCity && aCity !== targetCity) return 1;
+
+                return a.distance - b.distance;
+            });
+
+            grid.innerHTML = '';
+            badge.textContent = `${matches.length} compatible donor(s) matching`;
+
+            if (matches.length === 0) {
+                grid.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fa-solid fa-heart-crack"></i>
+                        <h3>No Matching Donors</h3>
+                        <p>No available donors of types (${compatibleGroups.join(', ')}) registered near ${targetCity}.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            matches.forEach(d => {
+                const card = document.createElement('div');
+                const dCity = d.city;
+                const group = d.bloodGroup || d.blood_group;
+                
+                const hasDonorCoords = (d.latitude !== undefined && d.latitude !== null && d.latitude !== 0) &&
+                                       (d.longitude !== undefined && d.longitude !== null && d.longitude !== 0);
+
+                let distanceButtonText = '';
+                if (dCity === targetCity) {
+                    const targetAreaNormal = (d.area || '').toLowerCase();
+                    if (targetAreaNormal === targetArea && targetArea) {
+                        distanceButtonText = 'Same Area';
+                    } else if (hasDonorCoords && exactHospitalGeocoded) {
+                        distanceButtonText = `${d.distance.toFixed(1)} km (Exact GPS)`;
+                    } else if (d.distance < 999999) {
+                        distanceButtonText = `${Math.round(d.distance)} km`;
+                    } else {
+                        distanceButtonText = 'Same District';
+                    }
+                } else if (d.distance < 999999) {
+                    if (hasDonorCoords && exactHospitalGeocoded) {
+                        distanceButtonText = `${d.distance.toFixed(1)} km (Exact GPS)`;
+                    } else {
+                        distanceButtonText = `~${Math.round(d.distance)} km`;
+                    }
+                } else {
+                    distanceButtonText = 'Other District';
+                }
+
+                const dateText = d.lastDonation || d.last_donation ? formatDate(d.lastDonation || d.last_donation) : 'Never';
+
+                // Bilingual WhatsApp Message
+                const waMsg = `Hello ${d.name}, we found your contact on BloodLink under matching donors for a recipient requiring ${targetBloodGroup} blood in ${targetCity}. Please help if available!\n\nவணக்கம் ${d.name}, BloodLink-ல் ${targetCity}-ல் ${targetBloodGroup} இரத்தம் தேவைப்படும் நோயாளிக்கு உங்களைப் பொருத்தமான நபராக கண்டறிந்தோம். உதவ முடிந்தால் தயவுசெய்து தொடர்பு கொள்ளவும்!`;
+                const waUrl = `https://wa.me/91${d.phone}?text=${encodeURIComponent(waMsg)}`;
+
+                // Generate Google Maps routing links
+                let hospToDonorUrl = '';
+                let donorToHospUrl = '';
+
+                if (exactHospitalGeocoded && hasDonorCoords) {
+                    hospToDonorUrl = `https://www.google.com/maps/dir/?api=1&origin=${targetCoords.lat},${targetCoords.lng}&destination=${d.latitude},${d.longitude}&travelmode=driving`;
+                    donorToHospUrl = `https://www.google.com/maps/dir/?api=1&origin=${d.latitude},${d.longitude}&destination=${targetCoords.lat},${targetCoords.lng}&travelmode=driving`;
+                } else {
+                    const hospToDonorOrigin = `${targetHospital ? targetHospital + ', ' : ''}${targetArea ? targetArea + ', ' : ''}${targetCity}, Tamil Nadu`;
+                    const hospToDonorDest = `${d.area ? d.area + ', ' : ''}${dCity}, Tamil Nadu`;
+                    hospToDonorUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(hospToDonorOrigin)}&destination=${encodeURIComponent(hospToDonorDest)}&travelmode=driving`;
+
+                    const donorToHospOrigin = `${d.area ? d.area + ', ' : ''}${dCity}, Tamil Nadu`;
+                    const donorToHospDest = `${targetHospital ? targetHospital + ', ' : ''}${targetArea ? targetArea + ', ' : ''}${targetCity}, Tamil Nadu`;
+                    donorToHospUrl = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(donorToHospOrigin)}&destination=${encodeURIComponent(donorToHospDest)}&travelmode=driving`;
+                }
+
+                card.className = "donor-card glass-card matched-card animate-pop";
+                card.innerHTML = `
+                    <div class="donor-card-header">
+                        <div class="donor-avatar">
+                            <span>${group}</span>
+                        </div>
+                        <div class="donor-title">
+                            <h4>${d.name}</h4>
+                            <p><i class="fa-solid fa-location-dot"></i> ${d.area}, ${dCity}</p>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;"><i class="fa-solid fa-phone"></i> +91 ${d.phone}</p>
+                        </div>
+                    </div>
+                    <div class="donor-details">
+                        <p><strong>Last Donation:</strong> ${dateText}</p>
+                        <p><strong>Bio:</strong> ${d.bio || 'No bio.'}</p>
+                    </div>
+                    <div class="donor-card-actions">
+                        <a href="${hospToDonorUrl}" target="_blank" class="btn btn-distance flex-btn" title="View route from Hospital to Donor (For Requesters)">
+                            <i class="fa-solid fa-route"></i> Hosp ➔ Donor (${distanceButtonText})
+                        </a>
+                        <a href="${donorToHospUrl}" target="_blank" class="btn btn-distance flex-btn" title="View route from Donor to Hospital (For Donors)">
+                            <i class="fa-solid fa-route"></i> Donor ➔ Hosp (${distanceButtonText})
+                        </a>
+                        <a href="tel:+91${d.phone}" class="btn btn-call flex-btn">
+                            <i class="fa-solid fa-phone"></i> Call
+                        </a>
+                        <a href="${waUrl}" target="_blank" class="btn btn-whatsapp flex-btn">
+                            <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                        </a>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // Haversine Distance Formula
+        function calculateHaversineDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = deg2rad(lat2 - lat1);
+            const dLon = deg2rad(lon2 - lon1);
+            const a = 
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * 
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return R * c;
+        }
+
+        function deg2rad(deg) {
+            return deg * (Math.PI / 180);
+        }
+
+        // Modal triggers for updating donor status
+        function openEditModal(id, name, currentAvailability) {
+            document.getElementById('editDonorId').value = id;
+            document.getElementById('editDonorNameText').textContent = name;
+            const checkbox = document.getElementById('editAvailability');
+            checkbox.checked = currentAvailability;
+            document.getElementById('editAvailabilityLabel').textContent = currentAvailability ? 'Available' : 'Not Available';
+            
+            document.getElementById('editDonorModal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('editDonorModal').classList.add('hidden');
+        }
+
+        async function handleEditDonorSubmit(event) {
+            event.preventDefault();
+            const id = parseInt(document.getElementById('editDonorId').value);
+            const avail = document.getElementById('editAvailability').checked;
+            
+            let success = false;
+            
+            if (isLiveApi) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/donors/${id}/availability`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: `availability=${avail}`
+                    });
+                    if (response.ok) {
+                        success = true;
+                    }
+                } catch (e) {
+                    console.error("Live API availability update failed, running local backup", e);
+                }
+            }
+
+            if (!success) {
+                mockDonors = mockDonors.map(d => d.id === id ? { ...d, availability: avail } : d);
+                localStorage.setItem('bloodlink_donors', JSON.stringify(mockDonors));
+            }
+
+            closeEditModal();
+            showAlert('Donor availability status updated!', 'success');
+            loadDonors();
+        }
+
+        // Interactive Compatibility view renderer
+        function updateCompatibilityView() {
+            const selector = document.getElementById('compatSelector');
+            const selectedGroup = selector.value;
+            if (!selectedGroup) return;
+
+            document.getElementById('compatPrompt').classList.add('hidden');
+            const results = document.getElementById('compatResults');
+            results.classList.remove('hidden');
+
+            const giveBadges = document.getElementById('canGiveBadges');
+            const receiveBadges = document.getElementById('canReceiveBadges');
+            const statusBox = document.getElementById('universalStatusBox');
+
+            giveBadges.innerHTML = '';
+            receiveBadges.innerHTML = '';
+            statusBox.innerHTML = '';
+
+            const CAN_GIVE_TO = {
+                'O-': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+'],
+                'O+': ['O+', 'A+', 'B+', 'AB+'],
+                'A-': ['A-', 'A+', 'AB-', 'AB+'],
+                'A+': ['A+', 'AB+'],
+                'B-': ['B-', 'B+', 'AB-', 'AB+'],
+                'B+': ['B+', 'AB+'],
+                'AB-': ['AB-', 'AB+'],
+                'AB+': ['AB+']
+            };
+
+            const CAN_RECEIVE_FROM = {
+                'O-': ['O-'],
+                'O+': ['O-', 'O+'],
+                'A-': ['O-', 'A-'],
+                'A+': ['O-', 'O+', 'A-', 'A+'],
+                'B-': ['O-', 'B-'],
+                'B+': ['O-', 'O+', 'B-', 'B+'],
+                'AB-': ['O-', 'A-', 'B-', 'AB-'],
+                'AB+': ['O-', 'O+', 'A-', 'A+', 'B-', 'B+', 'AB-', 'AB+']
+            };
+
+            const recipients = CAN_GIVE_TO[selectedGroup] || [];
+            recipients.forEach(group => {
+                const badge = document.createElement('span');
+                badge.className = 'compat-badge';
+                badge.textContent = group;
+                giveBadges.appendChild(badge);
+            });
+
+            const donors = CAN_RECEIVE_FROM[selectedGroup] || [];
+            donors.forEach(group => {
+                const badge = document.createElement('span');
+                badge.className = 'compat-badge';
+                badge.textContent = group;
+                receiveBadges.appendChild(badge);
+            });
+
+            if (selectedGroup === 'O-') {
+                statusBox.innerHTML = '<i class="fa-solid fa-circle-check text-primary"></i> <strong>Universal Donor:</strong> O- blood can be given to patients of any blood type in emergencies.';
+                statusBox.className = 'universal-status-box universal-donor';
+            } else if (selectedGroup === 'AB+') {
+                statusBox.innerHTML = '<i class="fa-solid fa-circle-check text-primary"></i> <strong>Universal Recipient:</strong> AB+ individuals can safely receive red blood cells from any blood type.';
+                statusBox.className = 'universal-status-box universal-recipient';
+            } else {
+                statusBox.className = 'universal-status-box hidden';
+            }
+        }
+
+        // Utility: Format Date string
+        function formatDate(dateStr) {
+            if (!dateStr) return 'Never';
+            const options = { year: 'numeric', month: 'short', day: 'numeric' };
+            return new Date(dateStr).toLocaleDateString(undefined, options);
+        }
+
+        // Utility: Format Time Ago
+        function formatTimeAgo(dateStr) {
+            if (!dateStr) return '';
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} min ago`;
+            
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+        }
+
+        // Alert Banner
+        function showAlert(message, type = 'info') {
+            const banner = document.getElementById('alertBanner');
+            const msgSpan = document.getElementById('alertMessage');
+            banner.className = `alert-banner show ${type}`;
+            msgSpan.textContent = message;
+            
+            setTimeout(() => {
+                closeAlert();
+            }, 4500);
+        }
+
+        function closeAlert() {
+            const banner = document.getElementById('alertBanner');
+            banner.className = 'alert-banner hidden';
+        }
+
+        // Mock Google Authentication
+        let pendingGoogleAuthType = '';
+
+        // Initialize Google Identity Services
+        window.addEventListener('load', () => {
+            if (window.google && google.accounts) {
+                const clientId = "200358748645-usb9u4rgditk3ddtfnb4bg89nhsejq8b.apps.googleusercontent.com";
+                
+                google.accounts.id.initialize({
+                    client_id: clientId,
+                    callback: handleCredentialResponse,
+                    cancel_on_tap_outside: false
+                });
+
+                // Render the official Google buttons in our modals
+                const signupBtnContainer = document.getElementById('googleSignInBtnSignup');
+                const loginBtnContainer = document.getElementById('googleSignInBtnLogin');
+                
+                if (signupBtnContainer) {
+                    google.accounts.id.renderButton(
+                        signupBtnContainer,
+                        { theme: "outline", size: "large", width: 350 }
+                    );
+                }
+                
+                if (loginBtnContainer) {
+                    google.accounts.id.renderButton(
+                        loginBtnContainer,
+                        { theme: "outline", size: "large", width: 350 }
+                    );
+                }
+            }
+        });
+
+        async function handleCredentialResponse(response) {
+            try {
+                const responsePayload = decodeJwtResponse(response.credential);
+                const email = responsePayload.email;
+                
+                // Hide modals while checking
+                document.getElementById('donorSignUpModal').classList.add('hidden');
+                document.getElementById('donorLoginModal').classList.add('hidden');
+                
+                // Check if user already exists
+                let userExists = false;
+                if (isLiveApi) {
+                    try {
+                        const checkRes = await fetch(`${API_BASE_URL}/donors/email/${encodeURIComponent(email)}`);
+                        if (checkRes.ok) {
+                            userExists = true;
+                        }
+                    } catch(e) {
+                        console.error('API check failed', e);
+                    }
+                }
+                
+                if (!userExists) {
+                    const localExists = (mockDonors || []).find(d => d.email === email);
+                    if (localExists) {
+                        userExists = true;
+                    }
+                }
+                
+                if (userExists) {
+                    // Existing User: Login directly without OTP!
+                    localStorage.setItem('donor_verified_email', email);
+                    localStorage.setItem('has_registered', 'true');
+                    
+                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
+                    sessionStorage.removeItem('post_auth_tab');
+                    switchTab(targetTab);
+                    
+                    checkExistingDonorAndSetupForm(email);
+                    showAlert('Logged in successfully via Google!', 'success');
+                    updateAuthUI();
+                } else {
+                    // New User: Login directly without OTP!
+                    localStorage.setItem('donor_verified_email', email);
+                    
+                    const emailInput = document.getElementById('donorEmail');
+                    if (emailInput) {
+                        emailInput.value = email;
+                        emailInput.readOnly = true;
+                        emailInput.style.backgroundColor = 'rgba(255,255,255,0.05)';
+                    }
+                    
+                    const targetTab = sessionStorage.getItem('post_auth_tab') || 'register';
+                    sessionStorage.removeItem('post_auth_tab');
+                    switchTab(targetTab);
+                    
+                    showAlert('Signed in with Google! Please complete your registration.', 'success');
+                    updateAuthUI();
+                }
+            } catch (error) {
+                console.error("Error decoding JWT or logging in:", error);
+                showAlert("Google Sign-In failed: " + (error.message || error), "error");
+            }
+        }
+
+        function decodeJwtResponse(token) {
+            let base64Url = token.split('.')[1];
+            let base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+            let jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join(''));
+            return JSON.parse(jsonPayload);
+        }
+
+
+    </script>
+    <script>
+        function updateAuthUI() {
+            const verifiedEmail = localStorage.getItem('donor_verified_email');
+            if (verifiedEmail) {
+                const headerActions = document.querySelector('.header-actions');
+                if (headerActions) {
+                    headerActions.innerHTML = `
+                        <div class="user-profile-menu" style="display: flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.05); padding: 0.4rem 1rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);">
+                            <i class="fa-solid fa-circle-user" style="font-size: 1.5rem; color: var(--accent-red);"></i>
+                            <div class="user-details" style="display: flex; flex-direction: column;">
+                                <span style="font-size: 0.85rem; font-weight: 600; color: white;">${verifiedEmail.split('@')[0]}</span>
+                                <span style="font-size: 0.7rem; color: var(--accent-red); cursor: pointer; font-weight: 500;" onclick="logoutDonor()">Logout</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            } else {
+                const headerActions = document.querySelector('.header-actions');
+                if (headerActions) {
+                    headerActions.innerHTML = `
+                        <div class="system-status" id="systemStatus">
+                            <span class="status-indicator offline"></span>
+                            <span class="system-status-badge status-text">Checking server...</span>
+                        </div>
+                    `;
+                    checkApiConnection();
+                }
+            }
+        }
+
+
+        function logoutDonor() {
+            sessionStorage.removeItem('donor_id');
+            localStorage.removeItem('donor_verified_email');
+            const emailInput = document.getElementById('donorEmail');
+            if (emailInput) {
+                emailInput.value = '';
+                emailInput.readOnly = false;
+                emailInput.style.backgroundColor = 'rgba(0,0,0,0.3)';
+            }
+            
+            document.getElementById('donorForm').reset();
+            const formTitle = document.querySelector('#registerTab .form-header h2');
+            const formDesc = document.querySelector('#registerTab .form-header p');
+            const submitBtn = document.querySelector('#registerTab button[type="submit"]');
+            if (formTitle) formTitle.innerHTML = '<i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor';
+            if (formDesc) formDesc.textContent = 'Be someone\'s hero. Register your details to join the active pool of donors in Tamil Nadu.';
+            if (submitBtn) submitBtn.textContent = 'Submit Registration';
+            
+            updateAuthUI();
+            switchTab('home');
+            showAlert('Logged out successfully.', 'info');
+        }
+
+        // Map Initialization Logic
+        let leafletMap = null;
+        let mapMarkers = [];
+
+        function initializeMap(requestLocation = false) {
+            const mapContainer = document.getElementById('liveMap');
+            if (!mapContainer) return;
+            
+            if (!leafletMap) {
+                // Initialize map centered on Tamil Nadu by default
+                leafletMap = L.map('liveMap').setView([11.1271, 78.6569], 7);
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 19
+                }).addTo(leafletMap);
+            }
+
+            if (requestLocation) {
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition((position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        leafletMap.setView([lat, lng], 12);
+                        
+                        // Add a pulse marker for the user
+                        const userIcon = L.divIcon({
+                            className: 'custom-div-icon',
+                            html: '<div style="background-color: #3498db; width: 16px; height: 16px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 10px rgba(52, 152, 219, 0.8);"></div>',
+                            iconSize: [16, 16],
+                            iconAnchor: [8, 8]
+                        });
+                        L.marker([lat, lng], {icon: userIcon}).addTo(leafletMap).bindPopup('<b>Your Location</b>').openPopup();
+                        
+                    }, (error) => {
+                        console.error('Geolocation error:', error);
+                        if (window.location.protocol === 'file:') {
+                            showAlert('Location blocked by browser for local files. Please use Live Server.', 'error');
+                        } else {
+                            showAlert('Location access denied or unavailable.', 'warning');
+                        }
+                    });
+                } else {
+                    showAlert('Geolocation is not supported by this browser.', 'error');
+                }
+            }
+
+            // Plot Donors
+            plotDonorsOnMap();
+        }
+
+        function plotDonorsOnMap() {
+            if (!leafletMap) return;
+            
+            // Clear existing markers
+            mapMarkers.forEach(marker => leafletMap.removeLayer(marker));
+            mapMarkers = [];
+            
+            const donorsToMap = mockDonors.filter(d => d.latitude && d.longitude && d.availability !== false);
+            
+            donorsToMap.forEach(donor => {
+                const markerIcon = L.divIcon({
+                    className: 'custom-div-icon',
+                    html: '<div style="background-color: #ff4757; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 8px rgba(255, 71, 87, 0.8);"></div>',
+                    iconSize: [14, 14],
+                    iconAnchor: [7, 7]
+                });
+                const marker = L.marker([donor.latitude, donor.longitude], {icon: markerIcon}).addTo(leafletMap);
+                marker.bindPopup(`<b>${donor.bloodGroup}</b><br>${donor.city}<br>${donor.area || ''}`);
+                mapMarkers.push(marker);
+            });
+        }
+    </script>
+    <!-- Donor ID Card Modal -->
+    <div id="donorCardModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 400px; padding: 0; overflow: hidden;">
+            <div style="background: linear-gradient(135deg, var(--primary-color), #c92a2a); color: white; padding: 2rem; text-align: center; position: relative;">
+                <button type="button" class="close-btn" onclick="document.getElementById('donorCardModal').classList.add('hidden')" style="color: white; top: 1rem; right: 1rem;"><i class="fa-solid fa-times"></i></button>
+                <div style="width: 80px; height: 80px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                    <i class="fa-solid fa-droplet" style="color: var(--primary-color); font-size: 2.5rem;"></i>
+                </div>
+                <h2 style="margin: 0; font-size: 1.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">BloodLink Donor</h2>
+                <p style="margin: 0.5rem 0 0 0; opacity: 0.9;">Thank you for registering!</p>
+            </div>
+            <div style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Name</span>
+                    <strong id="cardName" style="color: white;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Blood Group</span>
+                    <strong id="cardBloodGroup" style="color: var(--primary-color); font-size: 1.2rem;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Location</span>
+                    <strong id="cardLocation" style="color: white;">-</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+                    <span style="color: var(--text-muted); font-size: 0.9rem;">Donor ID</span>
+                    <strong id="cardId" style="color: white; font-family: monospace;">-</strong>
+                </div>
+                <button type="button" class="btn btn-primary" style="width: 100%;" onclick="document.getElementById('donorCardModal').classList.add('hidden')">Awesome!</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

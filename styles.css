@@ -26,8 +26,11 @@
 body {
     background-color: var(--bg-primary);
     background-image: 
-        radial-gradient(at 0% 0%, rgba(157, 78, 221, 0.12) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(236, 72, 153, 0.06) 0px, transparent 50%);
+        linear-gradient(rgba(9, 4, 22, 0.75), rgba(9, 4, 22, 0.95)),
+        url('hero-bg.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
     color: var(--text-main);
     font-family: 'Inter', sans-serif;
     min-height: 100vh;
@@ -215,7 +218,8 @@ h1, h2, h3, h4, .logo-text {
     grid-template-columns: 1.2fr 0.8fr;
     gap: 2rem;
     align-items: center;
-    background: linear-gradient(135deg, rgba(157, 78, 221, 0.15) 0%, rgba(19, 10, 39, 0.85) 100%);
+    background: linear-gradient(135deg, rgba(157, 78, 221, 0.1), rgba(19, 10, 39, 0.5));
+    backdrop-filter: blur(10px);
     border: 1px solid var(--glass-border);
     border-radius: 24px;
     padding: 3.5rem;
