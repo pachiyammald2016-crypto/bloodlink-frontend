@@ -26,8 +26,8 @@
 body {
     background-color: var(--bg-primary);
     background-image: 
-        linear-gradient(rgba(9, 4, 22, 0.75), rgba(9, 4, 22, 0.95)),
-        url('hero-bg.png');
+        linear-gradient(rgba(9, 4, 22, 0.4), rgba(9, 4, 22, 0.7)),
+        url('./hero-bg.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
