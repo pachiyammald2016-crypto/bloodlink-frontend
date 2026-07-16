@@ -905,16 +905,20 @@
 
         function setupToggleListeners() {
             const availToggle = document.getElementById('donorAvailability');
-            availToggle.addEventListener('change', (e) => {
-                const label = document.getElementById('availabilityLabel');
-                label.textContent = e.target.checked ? 'Available to Donate Now' : 'Busy / Not Available';
-            });
+            if (availToggle) {
+                availToggle.addEventListener('change', (e) => {
+                    const label = document.getElementById('availabilityLabel');
+                    if (label) label.textContent = e.target.checked ? 'Available to Donate Now' : 'Busy / Not Available';
+                });
+            }
 
             const editToggle = document.getElementById('editAvailability');
-            editToggle.addEventListener('change', (e) => {
-                const label = document.getElementById('editAvailabilityLabel');
-                label.textContent = e.target.checked ? 'Available' : 'Not Available';
-            });
+            if (editToggle) {
+                editToggle.addEventListener('change', (e) => {
+                    const label = document.getElementById('editAvailabilityLabel');
+                    if (label) label.textContent = e.target.checked ? 'Available' : 'Not Available';
+                });
+            }
         }
 
         // Populate Tamil Nadu districts dropdowns
@@ -924,7 +928,7 @@
                 document.getElementById('reqDistrict'),
                 document.getElementById('filterDistrict'),
                 document.getElementById('matchDistrict')
-            ];
+            ].filter(d => d !== null);
 
             const sortedDistricts = Object.keys(TAMIL_NADU_DISTRICTS).sort();
             
@@ -2147,32 +2151,7 @@
     </script>
     <script>
         function updateAuthUI() {
-            const verifiedEmail = localStorage.getItem('donor_verified_email');
-            if (verifiedEmail) {
-                const headerActions = document.querySelector('.header-actions');
-                if (headerActions) {
-                    headerActions.innerHTML = `
-                        <div class="user-profile-menu" style="display: flex; align-items: center; gap: 0.8rem; background: rgba(255,255,255,0.05); padding: 0.4rem 1rem; border-radius: 50px; border: 1px solid rgba(255,255,255,0.1);">
-                            <i class="fa-solid fa-circle-user" style="font-size: 1.5rem; color: var(--accent-red);"></i>
-                            <div class="user-details" style="display: flex; flex-direction: column;">
-                                <span style="font-size: 0.85rem; font-weight: 600; color: white;">${verifiedEmail.split('@')[0]}</span>
-                                <span style="font-size: 0.7rem; color: var(--accent-red); cursor: pointer; font-weight: 500;" onclick="logoutDonor()">Logout</span>
-                            </div>
-                        </div>
-                    `;
-                }
-            } else {
-                const headerActions = document.querySelector('.header-actions');
-                if (headerActions) {
-                    headerActions.innerHTML = `
-                        <div class="system-status" id="systemStatus">
-                            <span class="status-indicator offline"></span>
-                            <span class="system-status-badge status-text">Checking server...</span>
-                        </div>
-                    `;
-                    checkApiConnection();
-                }
-            }
+            // Unused in admin portal, do not touch DOM
         }
 
 
