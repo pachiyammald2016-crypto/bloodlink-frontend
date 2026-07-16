@@ -45,9 +45,9 @@ h1, h2, h3, h4, .logo-text {
 
 /* Header Styles */
 .app-header {
-    background: rgba(9, 4, 22, 0.8);
-    backdrop-filter: blur(12px);
-    border-bottom: 1px solid var(--glass-border);
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(2px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -83,8 +83,9 @@ h1, h2, h3, h4, .logo-text {
 
 .logo-text {
     font-size: 1.6rem;
-    font-weight: 800;
+    font-weight: 900;
     letter-spacing: -0.5px;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.5);
 }
 
 .logo-text span {
@@ -95,7 +96,7 @@ h1, h2, h3, h4, .logo-text {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(0, 0, 0, 0.2);
     padding: 0.5rem 1rem;
     border-radius: 20px;
     border: 1px solid var(--glass-border);
@@ -120,8 +121,8 @@ h1, h2, h3, h4, .logo-text {
 
 .status-text {
     font-size: 0.85rem;
-    color: var(--text-muted);
-    font-weight: 500;
+    color: #fff;
+    font-weight: 600;
 }
 
 /* Main Layout */
@@ -152,17 +153,18 @@ h1, h2, h3, h4, .logo-text {
 .nav-btn {
     background: transparent;
     border: none;
-    color: var(--text-muted);
+    color: #e2ddeb;
     padding: 1rem 1.25rem;
     border-radius: 12px;
     text-align: left;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 1rem;
     transition: var(--transition-smooth);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
 }
 
 .nav-btn i {
@@ -171,13 +173,13 @@ h1, h2, h3, h4, .logo-text {
 }
 
 .nav-btn:hover {
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--text-main);
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
 }
 
 .nav-btn.active {
-    background: var(--glass-bg);
-    color: var(--text-main);
+    background: rgba(36, 17, 72, 0.6);
+    color: #ffffff;
     box-shadow: var(--shadow-premium);
     border-left: 3px solid var(--accent-red);
 }
@@ -199,8 +201,8 @@ h1, h2, h3, h4, .logo-text {
 
 /* Glassmorphism Cards */
 .glass-card {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
+    background: rgba(36, 17, 72, 0.3);
+    backdrop-filter: blur(8px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 2rem;
@@ -209,7 +211,7 @@ h1, h2, h3, h4, .logo-text {
 }
 
 .glass-card:hover {
-    border-color: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.15);
 }
 
 /* Hero Section */
@@ -218,9 +220,9 @@ h1, h2, h3, h4, .logo-text {
     grid-template-columns: 1.2fr 0.8fr;
     gap: 2rem;
     align-items: center;
-    background: linear-gradient(135deg, rgba(157, 78, 221, 0.1), rgba(19, 10, 39, 0.5));
-    backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border);
+    background: linear-gradient(135deg, rgba(157, 78, 221, 0.05), rgba(19, 10, 39, 0.3));
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 24px;
     padding: 3.5rem;
     margin-bottom: 2rem;
@@ -229,23 +231,27 @@ h1, h2, h3, h4, .logo-text {
 }
 
 .hero-content h1 {
-    font-size: 3rem;
-    font-weight: 800;
+    font-size: 3.2rem;
+    font-weight: 900;
     line-height: 1.15;
     margin-bottom: 1.5rem;
     letter-spacing: -1px;
+    text-shadow: 2px 2px 5px rgba(0,0,0,0.6);
+    color: #ffffff;
 }
 
 .hero-content h1 .highlight {
-    color: #ef4444; /* Blood red highlight for blood theme */
-    text-shadow: 0 0 20px rgba(239, 68, 68, 0.25);
+    color: #ff3b3b; /* Brighter red */
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
 }
 
 .hero-subtitle {
-    color: var(--text-muted);
-    font-size: 1.1rem;
+    color: #ffffff;
+    font-size: 1.2rem;
     line-height: 1.6;
+    font-weight: 500;
     margin-bottom: 2.5rem;
+    text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
 }
 
 .hero-actions {
