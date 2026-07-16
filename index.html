@@ -1405,10 +1405,12 @@
             }
             if (tabId === 'match') {
                 if (sessionStorage.getItem('active_blood_request') !== 'true') {
-                    showAlert('Please submit a blood request first.', 'warning');
                     switchTab('request');
                     return;
                 }
+            } else {
+                // Clear the active request flag if we navigate away from the match tab
+                sessionStorage.removeItem('active_blood_request');
             }
 
             document.querySelectorAll('.nav-btn').forEach(btn => {
