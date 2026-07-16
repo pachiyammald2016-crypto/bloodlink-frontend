@@ -17,7 +17,7 @@
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
     
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../styles.css">
     <style>
         .reported-fake-badge {
             background: rgba(239, 68, 68, 0.15);
@@ -71,27 +71,18 @@
         <!-- Sidebar Navigation -->
         <aside class="sidebar">
             <nav class="sidebar-nav">
-                <button class="nav-btn active" data-tab="home">
-                    <i class="fa-solid fa-house"></i>
-                    <span>Home</span>
+                <button class="nav-btn active" data-tab="donors" id="navAdminDonors">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Donors List</span>
                 </button>
-
-                <button class="nav-btn" data-tab="request">
-                    <i class="fa-solid fa-notes-medical"></i>
-                    <span>Request Blood</span>
-                </button>
-
                 <button class="nav-btn" data-tab="requests-feed">
                     <i class="fa-solid fa-hand-holding-heart"></i>
                     <span>Blood Requests</span>
                 </button>
-                <button class="nav-btn" data-tab="match" id="navMatch">
-                    <i class="fa-solid fa-circle-nodes"></i>
-                    <span>Match Donors</span>
-                </button>
-                <button class="nav-btn" data-tab="compatibility">
-                    <i class="fa-solid fa-circle-info"></i>
-                    <span>Compatibility</span>
+                <div style="flex-grow: 1;"></div>
+                <button class="nav-btn" onclick="adminLogout()" style="margin-top: auto; color: #ef4444;">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Logout</span>
                 </button>
             </nav>
         </aside>
@@ -105,411 +96,71 @@
             </div>
 
             <!-- Home Tab -->
-            <section id="homeTab" class="tab-content active">
-                <div class="hero-section">
-                    <div class="hero-content">
-                        <h1>Connecting Lives, <br><span class="highlight">One Drop</span> at a Time</h1>
-                        <p class="hero-subtitle">Find blood donors near you in Tamil Nadu instantly. Register as a donor today to save lives, or raise a direct request for emergency cases.</p>
-                        <div class="hero-actions">
-                            <button class="btn btn-primary btn-lg" onclick="requireAuthAndNavigate('register')">
-                                <i class="fa-solid fa-heart-pulse"></i> Register as Donor
-                            </button>
-                            <button class="btn btn-secondary btn-lg" onclick="switchTab('request')">
-                                <i class="fa-solid fa-truck-medical"></i> Request Blood
-                            </button>
-                        </div>
-                    </div>
-                    <div class="hero-visual">
-                        <div class="blood-pulse-container">
-                            <div class="pulse-ring"></div>
-                            <div class="pulse-ring delay-1"></div>
-                            <div class="pulse-ring delay-2"></div>
-                            <div class="pulse-center">
-                                <i class="fa-solid fa-droplet"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live Quick Stats -->
-                <div class="quick-stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
-                        <div class="stat-info">
-                            <h3 id="statDonorsCount">0</h3>
-                            <p>Active Donors</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-circle-exclamation text-critical"></i></div>
-                        <div class="stat-info">
-                            <h3 id="statRequestsCount">0</h3>
-                            <p>Active Requests</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
-                        <div class="stat-info">
-                            <h3>38</h3>
-                            <p>Districts Covered</p>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                        <div class="stat-info">
-                            <h3>100%</h3>
-                            <p>Safe & Secure</p>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <!-- Emergency Banner -->
-                <div class="emergency-notice-panel">
-                    <div class="notice-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
-                    <div class="notice-body">
-                        <h4>Need Blood Urgently?</h4>
-                        <p>Go to the Request Blood tab to raise an emergency request for donors in your area.</p>
-                    </div>
-                    <button class="btn btn-danger" onclick="switchTab('request')">Request Blood Now</button>
-                </div>
-            </section>
+            
 
             <!-- Register Donor Tab -->
-            <section id="registerTab" class="tab-content">
-                <div class="form-container glass-card">
-                    <div class="form-header">
-                        <h2 id="donorFormTitle"><i class="fa-solid fa-user-plus text-primary"></i> Register as a Blood Donor</h2>
-                        <p id="donorFormSubtitle">Be someone's hero. Register your details to join the active donor pool in Tamil Nadu.</p>
-                        <div id="updateProfileBanner" class="hidden" style="background: rgba(30, 144, 255, 0.1); border-left: 4px solid dodgerblue; padding: 1rem; border-radius: 4px; margin-top: 1rem; color: #fff;">
-                            <i class="fa-solid fa-circle-info" style="color: dodgerblue;"></i> You are an existing donor. You can update your profile details below.
-                        </div>
-                    </div>
-                    
-                    <form id="donorForm" onsubmit="handleDonorRegistrationSubmit(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="donorName">Full Name <span class="required">*</span></label>
-                                    <input type="text" id="donorName" required placeholder="e.g. Anbarasan K">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="donorBloodGroup">Blood Group <span class="required">*</span></label>
-                                    <select id="donorBloodGroup" required>
-                                        <option value="" disabled selected>Select blood group</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="donorDistrict">District (Tamil Nadu) <span class="required">*</span></label>
-                                    <select id="donorDistrict" required onchange="handleDistrictChange('donorDistrict', 'donorAreaList')">
-                                        <option value="" disabled selected>Select District</option>
-                                        <!-- Dynamic List -->
-                                    </select>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="donorArea">Area/City/Taluk <span class="required">*</span></label>
-                                    <input type="text" id="donorArea" list="donorAreaList" required placeholder="Type or select area...">
-                                    <datalist id="donorAreaList"></datalist>
-                                    <input type="hidden" id="donorLat">
-                                    <input type="hidden" id="donorLng">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem;">
-                                        <button type="button" id="shareLocationBtn" class="btn btn-secondary btn-sm" onclick="getLiveLocation()" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 0.25rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; background: rgba(255,255,255,0.05); color: white; cursor: pointer;">
-                                            <i class="fa-solid fa-location-crosshairs text-primary"></i> Share Live Location
-                                        </button>
-                                        <span id="locationStatus" style="font-size: 0.8rem; color: var(--text-muted);">Not shared (uses district center)</span>
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="donorPhone">Contact Phone Number (10 digits) <span class="required">*</span></label>
-                                    <div class="input-phone-container">
-                                        <span class="phone-prefix">+91</span>
-                                        <input type="tel" id="donorPhone" pattern="[6-9][0-9]{9}" required placeholder="9876543210">
-                                    </div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="donorEmail">Email Address <span class="required">*</span></label>
-                                    <input type="email" id="donorEmail" placeholder="anbu@example.com" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="donorLastDonation">Last Blood Donation Date</label>
-                                    <input type="date" id="donorLastDonation">
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="donorAvailability">Availability Status</label>
-                                    <div class="toggle-switch-container">
-                                        <label class="switch">
-                                            <input type="checkbox" id="donorAvailability" checked>
-                                            <span class="slider round"></span>
-                                        </label>
-                                        <span class="toggle-label" id="availabilityLabel">Available to Donate Now</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                        <div class="form-group full-width">
-                            <label for="donorBio">Short Bio / Motivation / Medical Notes</label>
-                            <textarea id="donorBio" rows="3" placeholder="Write anything helpful (e.g. 'I can travel up to 20km', 'Fully vaccinated')"></textarea>
-                        </div>
-
-                        <div class="form-group full-width" style="margin-top: 1rem;">
-                            <label style="font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; display: block;">
-                                <i class="fa-solid fa-file-medical text-primary"></i> Mandatory Donor Health Screening
-                            </label>
-                            <div class="checkbox-group" style="display: flex; flex-direction: column; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                                    <input type="checkbox" id="healthTattoo" required style="margin-top: 0.2rem;">
-                                    <span>I have NOT had any tattoos, piercings, or acupuncture in the last 6 months. <span class="required">*</span></span>
-                                </label>
-                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                                    <input type="checkbox" id="healthAlcohol" required style="margin-top: 0.2rem;">
-                                    <span>I have NOT consumed alcohol in the last 24 hours. <span class="required">*</span></span>
-                                </label>
-                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                                    <input type="checkbox" id="healthDisease" required style="margin-top: 0.2rem;">
-                                    <span>I do NOT suffer from any major chronic diseases (such as HIV, Hepatitis, Heart disease, cancer). <span class="required">*</span></span>
-                                </label>
-                                <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                                    <input type="checkbox" id="healthWeight" required style="margin-top: 0.2rem;">
-                                    <span>My weight is at least 45 kg and I feel healthy today. <span class="required">*</span></span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="form-group full-width" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
-                            <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                                <input type="checkbox" id="donorDisclaimer" required style="margin-top: 0.2rem;">
-                                <span><strong>Disclaimer:</strong> I understand that this platform only connects donors with recipients. The final compatibility tests and health checks will be performed at the hospital before transfusion. <span class="required">*</span></span>
-                            </label>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="reset" class="btn btn-secondary">Reset Form</button>
-                            <button type="submit" class="btn btn-primary">Submit Registration</button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Guidelines & Benefits (inside Register Donor Tab) -->
-                <div class="glass-card" style="margin-top: 2rem;">
-                    <h2><i class="fa-solid fa-book-medical text-primary"></i> Blood Donation Guidelines & Health Benefits</h2>
-                    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Learn about why blood donation is important and what you should do before/after donating blood.</p>
-                    
-                    <div class="guidelines-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
-                        <!-- Benefits Card -->
-                        <div class="glass-card" style="padding: 1.5rem; background: rgba(157, 78, 221, 0.05); border: 1px solid rgba(157, 78, 221, 0.15);">
-                            <h4 style="color: var(--accent-red); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fa-solid fa-circle-chevron-up"></i> Health Benefits of Donating
-                            </h4>
-                            <ul style="list-style-type: none; padding-left: 0; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.9rem; color: var(--text-main);">
-                                <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                    <i class="fa-solid fa-circle-check" style="color: #4cd137; margin-top: 0.2rem;"></i>
-                                    <span><strong>Revitalizes Blood Cells:</strong> Donating blood stimulates the production of new red blood cells, keeping your cardiovascular system healthy.</span>
-                                </li>
-                                <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                    <i class="fa-solid fa-circle-check" style="color: #4cd137; margin-top: 0.2rem;"></i>
-                                    <span><strong>Free Health Checkup:</strong> Every time you donate, you get a mini-physical checkup including blood pressure, pulse, temperature, and hemoglobin levels.</span>
-                                </li>
-                                <li style="display: flex; align-items: flex-start; gap: 0.5rem;">
-                                    <i class="fa-solid fa-circle-check" style="color: #4cd137; margin-top: 0.2rem;"></i>
-                                    <span><strong>Saves up to 3 Lives:</strong> A single blood donation can be split into its components (red cells, plasma, platelets) to save multiple patients.</span>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Dos & Don'ts Card -->
-                        <div class="glass-card" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);">
-                            <h4 style="color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fa-solid fa-circle-info text-primary"></i> Pre-Donation Guidelines
-                            </h4>
-                            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem;">
-                                <div>
-                                    <h5 style="color: #4cd137; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-up"></i> What to DO:</h5>
-                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
-                                        <li>Drink plenty of water (500ml) or non-alcoholic fluids before donating.</li>
-                                        <li>Eat a healthy, low-fat meal. Do not donate on an empty stomach.</li>
-                                        <li>Get a good night's sleep (7-8 hours) prior to donation.</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h5 style="color: #ff4d5a; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-down"></i> What to AVOID:</h5>
-                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
-                                        <li>Do NOT consume alcohol within 24 hours prior to donation.</li>
-                                        <li>Avoid fatty foods like burgers or fries, as they can interfere with blood testing.</li>
-                                        <li>Do NOT smoke for at least 4 hours before your donation.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Post-Donation Guidelines -->
-                        <div class="glass-card" style="padding: 1.5rem; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--glass-border);">
-                            <h4 style="color: var(--text-main); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                                <i class="fa-solid fa-circle-exclamation text-primary"></i> Post-Donation Guidelines
-                            </h4>
-                            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.85rem;">
-                                <div>
-                                    <h5 style="color: #4cd137; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-up"></i> What to DO:</h5>
-                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
-                                        <li>Drink extra fluids throughout the day to replace lost volume.</li>
-                                        <li>Keep the strip bandage on for at least 4-6 hours.</li>
-                                        <li>Eat iron-rich foods (spinach, beans, raisins, poultry) after donation.</li>
-                                    </ul>
-                                </div>
-                                <div>
-                                    <h5 style="color: #ff4d5a; margin-bottom: 0.25rem;"><i class="fa-solid fa-thumbs-down"></i> What to AVOID:</h5>
-                                    <ul style="padding-left: 1.25rem; color: var(--text-muted);">
-                                        <li>Do NOT lift heavy objects or do intense exercise for 24 hours.</li>
-                                        <li>Avoid standing for long periods or going into direct hot sun.</li>
-                                        <li>Do NOT consume alcohol for at least 24 hours post-donation.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            
 
             <!-- Request Blood Tab -->
-            <section id="requestTab" class="tab-content">
-                <div class="form-container glass-card">
-                    <div class="form-header">
-                        <h2><i class="fa-solid fa-notes-medical text-primary"></i> Create Blood Request</h2>
-                        <p>Require blood urgently? Post a request detailing the requirements to notify matches immediately.</p>
+            
+
+            <!-- Donors List Tab -->
+            <section id="donorsTab" class="tab-content">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-users text-primary"></i> Registered Donors</h2>
+                    <p>Search and filter active donors across Tamil Nadu.</p>
+                </div>
+
+                <div class="filter-bar glass-card">
+                    <div class="filter-grid">
+                        <div class="form-group">
+                            <label for="filterBloodGroup">Blood Group</label>
+                            <select id="filterBloodGroup" onchange="applyDonorFilters()">
+                                <option value="All">All Blood Groups</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterDistrict">District</label>
+                            <select id="filterDistrict" onchange="applyDonorFilters()">
+                                <option value="All">All Districts</option>
+                                <!-- Dynamic List -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="filterAvailability">Availability</label>
+                            <select id="filterAvailability" onchange="applyDonorFilters()">
+                                <option value="All">All Donors</option>
+                                <option value="Available" selected>Available Only</option>
+                            </select>
+                        </div>
+                        <div class="form-group search-group">
+                            <label for="searchDonorQuery">Search Name/Area</label>
+                            <div class="search-input-wrapper">
+                                <input type="text" id="searchDonorQuery" placeholder="Search..." oninput="applyDonorFilters()">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <form id="requestForm" onsubmit="handleRequestSubmit(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="reqPatientName">Patient Name <span class="required">*</span></label>
-                                <input type="text" id="reqPatientName" required placeholder="e.g. Ramesh Kumar">
-                            </div>
+                </div>
 
-                            <div class="form-group">
-                                <label for="reqBloodGroup">Required Blood Group <span class="required">*</span></label>
-                                <select id="reqBloodGroup" required>
-                                    <option value="" disabled selected>Select blood group</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqHospital">Hospital Name & Address <span class="required">*</span></label>
-                                <input type="text" id="reqHospital" list="hospitalList" required placeholder="Type hospital name or address...">
-                                <datalist id="hospitalList">
-                                    <option value="Apollo Hospitals, Greams Road, Chennai"></option>
-                                    <option value="Rajiv Gandhi Government General Hospital (GGH), Chennai"></option>
-                                    <option value="Stanley Medical College Hospital, Chennai"></option>
-                                    <option value="Kilpauk Medical College Hospital (KMCH), Chennai"></option>
-                                    <option value="Fortis Malar Hospital, Adyar, Chennai"></option>
-                                    <option value="MIOT International, Manapakkam, Chennai"></option>
-                                    <option value="Sri Ramachandra Medical Centre, Porur, Chennai"></option>
-                                    <option value="Christian Medical College (CMC), Vellore"></option>
-                                    <option value="Ganga Hospital, Ramnagar, Coimbatore"></option>
-                                    <option value="Kovai Medical Center and Hospital (KMCH), Coimbatore"></option>
-                                    <option value="PSG Hospitals, Peelamedu, Coimbatore"></option>
-                                    <option value="Government Rajaji Hospital (GRH), Madurai"></option>
-                                    <option value="Meenakshi Mission Hospital, Madurai"></option>
-                                    <option value="Velammal Medical College Hospital, Madurai"></option>
-                                    <option value="Kauvery Hospital, Tennur, Trichy"></option>
-                                    <option value="Mahatma Gandhi MGM Government Hospital, Trichy"></option>
-                                    <option value="Government Mohan Kumaramangalam Hospital, Salem"></option>
-                                    <option value="Tirunelveli Medical College Hospital (TVMC), Tirunelveli"></option>
-                                </datalist>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqDistrict">District (Tamil Nadu) <span class="required">*</span></label>
-                                <select id="reqDistrict" required onchange="handleDistrictChange('reqDistrict', 'reqAreaList')">
-                                    <option value="" disabled selected>Select District</option>
-                                    <!-- Dynamic List -->
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqArea">Area / Taluk (Hospital Location) <span class="required">*</span></label>
-                                <input type="text" id="reqArea" list="reqAreaList" required placeholder="Type or select area...">
-                                <datalist id="reqAreaList"></datalist>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqLandmark">Landmark / Hospital Landmark</label>
-                                <input type="text" id="reqLandmark" list="landmarkList" placeholder="e.g. Near Bus Stand, Opp Railway Station">
-                                <datalist id="landmarkList">
-                                    <option value="Near Central Railway Station"></option>
-                                    <option value="Opposite Central Bus Stand"></option>
-                                    <option value="Near Collectorate Office"></option>
-                                    <option value="Near Government Hospital Square"></option>
-                                    <option value="Opposite Post Office"></option>
-                                    <option value="Near Clock Tower"></option>
-                                    <option value="Near Bypass Junction"></option>
-                                </datalist>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqUnits">Required Units (Pints/Bags) <span class="required">*</span></label>
-                                <input type="number" id="reqUnits" min="1" max="100" required placeholder="e.g. 2">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqUrgency">Urgency Level <span class="required">*</span></label>
-                                <select id="reqUrgency" required>
-                                    <option value="Normal" selected>Normal</option>
-                                    <option value="Medium">Medium</option>
-                                    <option value="Critical">Critical (Immediate Need)</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="reqPhone">Attender / Contact Phone (10 digits) <span class="required">*</span></label>
-                                <div class="input-phone-container">
-                                    <span class="phone-prefix">+91</span>
-                                    <input type="tel" id="reqPhone" pattern="[6-9][0-9]{9}" required placeholder="9876543210">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group full-width">
-                            <label for="reqNotes">Additional Instructions / Case Details</label>
-                            <textarea id="reqNotes" rows="3" placeholder="Mention why it's needed, ICU bed details, or any other constraints..."></textarea>
-                        </div>
-
-                        <div class="form-group full-width" style="margin-top: 0.5rem; margin-bottom: 1.5rem;">
-                            <label style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; user-select: none;">
-                                <input type="checkbox" id="reqDisclaimer" required style="margin-top: 0.2rem;">
-                                <span><strong>Disclaimer:</strong> I understand that this platform only connects donors with recipients. The final compatibility tests and health checks will be performed at the hospital before transfusion. <span class="required">*</span></span>
-                            </label>
-                        </div>
-
-                        <div class="form-actions">
-                            <button type="reset" class="btn btn-secondary">Reset Form</button>
-                            <button type="submit" class="btn btn-primary">Post Request</button>
-                        </div>
-                    </form>
+                <!-- Donors Grid -->
+                <div class="donors-grid" id="donorsGrid">
+                    <!-- Dynamic Donor Cards -->
+                </div>
+                <div class="empty-state hidden" id="donorsEmptyState">
+                    <i class="fa-solid fa-user-slash"></i>
+                    <h3>No Donors Found</h3>
+                    <p>Try modifying your filters or register a new donor yourself!</p>
                 </div>
             </section>
-
-
 
             <!-- Blood Requests Feed Tab -->
             <section id="requests-feedTab" class="tab-content">
@@ -530,141 +181,10 @@
             </section>
 
             <!-- Match Donors Tab -->
-            <section id="matchTab" class="tab-content">
-                <div class="form-container glass-card">
-                    <div class="form-header">
-                        <h2><i class="fa-solid fa-circle-nodes text-primary"></i> Find Compatible Donors</h2>
-                        <p>Enter the patient's blood type and location. The matching engine computes the nearest compatible donors first using GPS coordinates.</p>
-                    </div>
-
-                    <form id="matchForm" onsubmit="findMatches(event)">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="matchBloodGroup">Patient Blood Group <span class="required">*</span></label>
-                                <select id="matchBloodGroup" required>
-                                    <option value="" disabled selected>Select blood group</option>
-                                    <option value="O+">O+</option>
-                                    <option value="O-">O-</option>
-                                    <option value="A+">A+</option>
-                                    <option value="A-">A-</option>
-                                    <option value="B+">B+</option>
-                                    <option value="B-">B-</option>
-                                    <option value="AB+">AB+</option>
-                                    <option value="AB-">AB-</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="matchDistrict">District (Location) <span class="required">*</span></label>
-                                <select id="matchDistrict" required onchange="handleDistrictChange('matchDistrict', 'matchAreaList')">
-                                    <option value="" disabled selected>Select District</option>
-                                    <!-- Dynamic List -->
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="matchArea">Area / Taluk</label>
-                                <input type="text" id="matchArea" list="matchAreaList" placeholder="Type or select area...">
-                                <datalist id="matchAreaList"></datalist>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="matchHospital">Hospital Name <span class="required">*</span></label>
-                                <input type="text" id="matchHospital" list="matchHospitalList" placeholder="e.g. Apollo Hospital, Chennai" required>
-                                <datalist id="matchHospitalList">
-                                    <option value="Apollo Hospitals, Greams Road, Chennai"></option>
-                                    <option value="Rajiv Gandhi Government General Hospital (GGH), Chennai"></option>
-                                    <option value="Stanley Medical College Hospital, Chennai"></option>
-                                    <option value="Kilpauk Medical College Hospital (KMCH), Chennai"></option>
-                                    <option value="Christian Medical College (CMC), Vellore"></option>
-                                    <option value="Kovai Medical Center and Hospital (KMCH), Coimbatore"></option>
-                                    <option value="Government Rajaji Hospital (GRH), Madurai"></option>
-                                    <option value="Mahatma Gandhi MGM Government Hospital, Trichy"></option>
-                                </datalist>
-                            </div>
-                        </div>
-
-                        <div class="form-actions match-actions">
-                            <button type="submit" class="btn btn-primary btn-lg full-width-btn">
-                                <i class="fa-solid fa-crosshairs"></i> Run Matching Algorithm
-                            </button>
-                        </div>
-                    </form>
-                </div>
-
-                <!-- Match Results Panel -->
-                <div id="matchResultsContainer" class="match-results-container hidden">
-                    <div class="results-header">
-                        <h3>Match Results</h3>
-                        <span id="matchStatsBadge" class="match-badge">0 matches found</span>
-                    </div>
-
-                    <div class="compatible-info-alert">
-                        <i class="fa-solid fa-circle-info"></i>
-                        <span id="compatibilityMessage">Showing compatible donor groups for the patient.</span>
-                    </div>
-
-                    <div class="donors-grid" id="matchedDonorsGrid">
-                        <!-- Matched Donors Card list -->
-                    </div>
-                </div>
-
-                <!-- Lookup Donor Location Panel -->
-                <div class="glass-card" style="margin-top: 2rem; padding: 1.5rem;">
-                    <h4><i class="fa-solid fa-map-location-dot text-primary"></i> Track Donor Location by Phone Number</h4>
-                    <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Enter a registered donor's phone number to view their registered location on Google Maps.</p>
-                    <div style="display: flex; gap: 0.5rem; max-width: 450px;">
-                        <input type="tel" id="lookupPhone" placeholder="Enter 10-digit phone number" class="form-control" style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.25); color: white;">
-                        <button type="button" class="btn btn-primary" onclick="lookupDonorLocation()">Search Location</button>
-                    </div>
-                    <div id="lookupResult" class="hidden" style="margin-top: 1rem; padding: 1rem; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.05);"></div>
-                </div>
-            </section>
+            
 
             <!-- Compatibility Guide Tab -->
-            <section id="compatibilityTab" class="tab-content">
-                <div class="glass-card compatibility-card">
-                    <h2><i class="fa-solid fa-circle-info text-primary"></i> Blood Type Compatibility Guide</h2>
-                    <p>Select a blood group below to analyze its compatibility rules dynamically.</p>
-                    
-                    <div class="interactive-compat-box">
-                        <div class="form-group" style="max-width: 300px; margin-bottom: 2rem;">
-                            <label for="compatSelector">Select Blood Group</label>
-                            <select id="compatSelector" onchange="updateCompatibilityView()">
-                                <option value="" disabled selected>-- Select a blood group --</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                            </select>
-                        </div>
-
-                        <div id="compatResults" class="compat-results hidden">
-                            <div class="compat-cards-grid">
-                                <div class="compat-result-card can-give">
-                                    <h4><i class="fa-solid fa-hand-holding-medical"></i> Can Give Blood To (Recipients)</h4>
-                                    <div class="compat-badges" id="canGiveBadges"></div>
-                                </div>
-                                <div class="compat-result-card can-receive">
-                                    <h4><i class="fa-solid fa-hand-holding-heart"></i> Can Receive Blood From (Donors)</h4>
-                                    <div class="compat-badges" id="canReceiveBadges"></div>
-                                </div>
-                            </div>
-                            
-                            <div class="universal-status-box" id="universalStatusBox"></div>
-                        </div>
-                        
-                        <div id="compatPrompt" class="compat-prompt">
-                            <i class="fa-solid fa-hand-pointer"></i>
-                            <p>Please select a blood group to view compatibility rules.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            
 
         </main>
     </div>
@@ -764,6 +284,25 @@
     </div>
 
 
+
+    <!-- Admin Authentication Modal -->
+    <div id="adminAuthModal" class="modal hidden">
+        <div class="modal-content glass-card" style="max-width: 380px;">
+            <span class="close-modal" onclick="closeAdminAuthModal()">&times;</span>
+            <h3 style="margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;"><i class="fa-solid fa-lock text-primary"></i> Admin Verification</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.4;">This directory is restricted. Enter the Admin Password to unlock access.</p>
+            <form onsubmit="handleAdminAuthSubmit(event)">
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label for="adminPasswordInput" style="font-size: 0.85rem; color: var(--text-main); font-weight: 500; display: block; margin-bottom: 0.5rem;">Admin Password</label>
+                    <input type="password" id="adminPasswordInput" required placeholder="••••••••" style="width: 100%; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3); color: white; outline: none; font-size: 0.95rem;">
+                </div>
+                <div class="form-actions" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                    <button type="button" class="btn btn-secondary" onclick="closeAdminAuthModal()" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.9rem;">Verify</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- Location Prompt Modal -->
     <div id="locationPromptModal" class="modal hidden" style="z-index: 9999;">
@@ -890,6 +429,16 @@
 
         // Initialize App
         window.addEventListener('DOMContentLoaded', () => {
+            const isAdmin = sessionStorage.getItem('admin_verified') === 'true';
+            if (!isAdmin) {
+                openAdminAuthModal('donors');
+                // Hide close button to force login
+                const closeBtn = document.querySelector('#adminAuthModal .close-modal');
+                if(closeBtn) closeBtn.style.display = 'none';
+            } else {
+                switchTab('donors');
+            }
+
             setTimeout(checkAndPromptLocation, 1000); // Check location access shortly after load
             
             // Check for reset parameter to clear local storage
@@ -908,8 +457,6 @@
             setupToggleListeners();
             initializeMockData();
             checkApiConnection();
-            
-
             updateAuthUI();
             
             // Check Admin Status on Load
@@ -1295,18 +842,13 @@
                 document.getElementById('adminAuthModal').classList.add('hidden');
                 showAlert('Admin verification successful!', 'success');
                 
-                // Reveal Admin Tabs
-                document.getElementById('navAdminDonors').style.display = 'flex';
-                document.getElementById('adminLoginBtn').style.display = 'none';
-
-                if (pendingTargetTab) {
-                    switchTab(pendingTargetTab);
-                }
+                // Switch to donors tab automatically
+                switchTab('donors');
             } else {
-                document.getElementById('adminAuthModal').classList.add('hidden');
-                showAlert('Only Admin can access', 'error');
+                showAlert('Incorrect Admin Password', 'error');
             }
         }
+
 
         function switchTab(tabId) {
             if (tabId === 'donors') {
