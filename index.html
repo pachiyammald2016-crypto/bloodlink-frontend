@@ -1405,9 +1405,16 @@
             }
             if (tabId === 'match') {
                 if (sessionStorage.getItem('active_blood_request') !== 'true') {
+                    showAlert('Please submit a blood request first.', 'warning');
                     switchTab('request');
                     return;
                 }
+                
+                // Clear old search results whenever the Match tab is opened
+                const resultsContainer = document.getElementById('matchResultsContainer');
+                const matchedGrid = document.getElementById('matchedDonorsGrid');
+                if (resultsContainer) resultsContainer.classList.add('hidden');
+                if (matchedGrid) matchedGrid.innerHTML = '';
             } else {
                 // Clear the active request flag if we navigate away from the match tab
                 sessionStorage.removeItem('active_blood_request');
