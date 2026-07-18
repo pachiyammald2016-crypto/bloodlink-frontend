@@ -1954,7 +1954,7 @@
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            id: donor.id || null,
+                            id: donor.id || (isUpdatingProfile ? parseInt(sessionStorage.getItem('donor_id')) : null),
                             name: donor.name,
                             age: donor.age,
                             gender: donor.gender,
